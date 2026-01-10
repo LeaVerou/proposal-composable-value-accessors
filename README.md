@@ -128,14 +128,14 @@ set foo(value) {
 
 In these cases, the actual underlying property is an implementation detail, and specifying it explicitly introduces unnecessary cognitive overhead.
 
-In other cases, the accessor is proxying another property that is also accessed separately:
+In other cases (which may or may not be out of scope for this proposal), the accessor is proxying another property that is also accessed separately:
 
 ```js
-get bar () {
-	return this.foo.value;
+get foo () {
+	return this.#fooSignal.value;
 }
-set bar (value) {
-	this.foo.value = value;
+set foo (value) {
+	this.#fooSignal.value = value;
 }
 ```
 
@@ -146,15 +146,21 @@ Some (not mutually exclusive) reasons for this are:
 
 ## Detailed design
 
-Since Stage 1 is mainly about the problem statement, and any proposed solutions are strawmen to be bikeshedded, the current brainstorming around design & implementation is moved to a separate document:
-[Detailed design](design.md)
+Since Stage 1 is mainly about the problem statement, and any proposed solutions are strawmen to be bikeshedded, the current brainstorming around design & implementation is moved to separate documents.
+
+Additionally, it has been layered into three separate sub-proposals which can ship separately:
+
+1. [v1](design-v1.md): Basic value-backed accessors
+2. [v2](design-v2.md): Write side effects
+3. [v3](design-v3.md): Custom data sources and read transformations
+
+Eventually, these can be split into separate proposals.
 
 ## Relationship to other proposals
 
-
 ### [Grouped accessors and auto-accessors](https://github.com/tc39/proposal-grouped-and-auto-accessors)
 
-This proposal solves some of the same problems, differently.
+This proposal overlaps with the simplest problems this proposal addresses (but solves them differently), but both solve different problems beyond that minimal shared core.
 
 First, it also provides a simple way to define **basic value-backed accessors**, using an `accessor` keyword ("auto-accessors"):
 
@@ -164,9 +170,9 @@ class C {
 }
 ```
 
-However, in that case, **the mental model should be declaring a data property**, and accessors are an implementation detail that should not drive syntax.
+However, for basic value-backed accessors, **the mental model should be declaring a data property**, and accessors are an implementation detail that should not drive syntax.
 
-Additionally, auto-accessors are based on private fields, which makes it hard to extend to objects, and creates a confusing error condition: you can't have a `foo` accessor and a `#foo` private member, although the author never defined a `#foo` property.
+Additionally, auto-accessors are based on private fields, which makes it hard to extend to objects (at least without [private declarations](https://github.com/tc39/proposal-private-declarations)), and creates a confusing error condition: you can't have a `foo` accessor and a `#foo` private member, although the author never defined a `#foo` property.
 This breaks the principle of least surprise.
 The slot where the data is stored should be an **implementation detail**, not something the author needs to be concerned about, unless they specify it explicitly.
 
@@ -181,7 +187,7 @@ class C {
 }
 ```
 
-That's a great DX improvement for regular accessors, but it's orthogonal to the problem statement of this proposal.
+This is **complementary** to some of the possible designs for this proposal, which depend on it for reducing repetition of the property name (see [v2](design-v2.md)).
 
 Beyond that, its extended syntax focuses around access control, e.g. public getters with private setters, which is also orthogonal to this proposal.
 
@@ -205,22 +211,24 @@ class C {
 }
 ```
 
-One of the reasons part of the auto-accessors proposal was pulled into decorators was to facilitate exactly some of these use cases, by allowing for patterns like:
+One of the core motivations of the auto-accessors proposal was to facilitate exactly some of these use cases, by allowing for patterns like:
 
 ```js
 class C {
-  @foobar
-  accessor foo = 1;
+  @foobar accessor foo = 1;
 
-  @foobar
-  accessor bar {
+  @foobar accessor bar {
     get() { ... }
     set(value) { ... }
   }
 }
 ```
 
-This proposal allows for a similar pattern, with potentially less baggage.
+However, the mental model around data properties is not about defining an accessor.
+Accessors are essentially an implementation detail and should not drive syntax.
+
+Additionally, the auto-accessors proposal includes a lot of additional complexity around access control which is not necessary for these use cases.
+This proposal defines simple value-backed accessors in a way that is more geared around the mental model of defining a data property, and can ship without any additional complexity.
 
 ### [First-class protocols](https://github.com/tc39/proposal-first-class-protocols)
 
@@ -241,3 +249,5 @@ This highlights exactly why the two problem statements should be solved together
 A userland decorator could probably solve the second problem statement, though it would be somewhat awkward to specify the necessary logic.
 But to solve the first problem, the syntax for defining these fields needs to be ubiquitous.
 If authors need to pull in utilities and helpers to define the shape of their classes, the path of least resistance is to continue to just use class fields.
+
+Additionally, making value-backed accessors a first-class primitive automatically makes decorators more powerful: they can now can get access to more structured information (e.g. the actual data transformation or validation logic instead of one big opaque setter) and make more informed decisions.
