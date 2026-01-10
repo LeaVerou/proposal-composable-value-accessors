@@ -53,7 +53,6 @@ class C {
 }
 ```
 
-However, given that we may want to layer additional logic over the proxied property, `=` may not be appropriate.
 Another idea is to use a keyword:
 
 ```js
