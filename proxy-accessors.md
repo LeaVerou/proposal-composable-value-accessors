@@ -52,3 +52,12 @@ class C {
 	proxy foo = #foo.value;
 }
 ```
+
+However, given that we may want to layer additional logic over the proxied property, `=` may not be appropriate.
+Another idea is to use a keyword:
+
+```js
+class C {
+	proxy #foo.value as foo;
+}
+```
