@@ -29,8 +29,6 @@ composable accessors are **value-backed**: as a baseline they proxy another prop
    2. [Why not just use decorators?](#why-not-just-use-decorators)
 
 
-
-
 ## Motivation
 
 This proposal addresses two separate problem statements:
@@ -146,9 +144,7 @@ Eventually, these can be split into separate proposals.
 
 ### [Grouped accessors and auto-accessors](https://github.com/tc39/proposal-grouped-and-auto-accessors)
 
-This proposal overlaps with the simplest problems this proposal addresses (but solves them differently), but both solve different problems beyond that minimal shared core.
-
-First, it also provides a simple way to define **basic value-backed accessors**, using an `accessor` keyword ("auto-accessors"):
+There is a small overlap between the two proposals when it comes to [value-backed accessors](design-v1.md), since auto-accessors also include a syntax for this, though implemented differently:
 
 ```js
 class C {
@@ -162,7 +158,9 @@ Additionally, auto-accessors are based on private fields, which makes it hard to
 This breaks the principle of least surprise.
 The slot where the data is stored should be an **implementation detail**, not something the author needs to be concerned about, unless they specify it explicitly.
 
-Second, they also provide a way to define **grouped accessors** where the property name does not need to be repeated, and decorators can be applied to the entire group at once.
+Beyond that minimal shared core, the two proposals solve different problems and **compose nicely**, with each making the other stronger.
+
+For example, **grouped accessors** can be used to group getters and setters together so that the property name does not need to be repeated, and decorators can be applied to the entire group at once:
 
 ```js
 class C {
@@ -210,11 +208,12 @@ class C {
 }
 ```
 
-However, the mental model around data properties is not about defining an accessor.
-Accessors are essentially an implementation detail and should not drive syntax.
+However, for plain data properties without additional logic, accessors are an implementation detail and should not be driving syntax.
 
 Additionally, the auto-accessors proposal includes a lot of additional complexity around access control which is not necessary for these use cases.
 This proposal defines simple value-backed accessors in a way that is more geared around the mental model of defining a data property, and can ship without any additional complexity.
+
+Last, decoupling common accessor use cases into separate, composable first-class parts makes decorators more powerful as they can now get access to more granular information about the accessor they are decorating rather than just a big opaque setter (e.g. the underlying value, any validation logic, etc.) and make more informed decisions.
 
 ### [First-class protocols](https://github.com/tc39/proposal-first-class-protocols)
 
@@ -233,7 +232,7 @@ Presumably, once this feature is possible, it will also enable further optimizat
 This highlights exactly why the two problem statements should be solved together.
 
 A userland decorator could probably solve the second problem statement, though it would be somewhat awkward to specify the necessary logic.
-But to solve the first problem, the syntax for defining these fields needs to be ubiquitous.
+But to solve the first problem, the syntax for defining these fields needs to be **ubiquitous**.
 If authors need to pull in utilities and helpers to define the shape of their classes, the path of least resistance is to continue to just use class fields.
 
-Additionally, making value-backed accessors a first-class primitive automatically makes decorators more powerful: they can now can get access to more structured information (e.g. the actual data transformation or validation logic instead of one big opaque setter) and make more informed decisions.
+
