@@ -132,11 +132,11 @@ Some (not mutually exclusive) reasons for this are:
 
 Since Stage 1 is mainly about the problem statement, and any proposed solutions are strawmen to be bikeshedded, the current brainstorming around design & implementation is moved to separate documents.
 
-Additionally, it has been layered into three separate sub-proposals which can ship separately:
+Additionally, it has been layered into three separate sub-proposals which can ship independently:
 
-1. [v1](design-v1.md): Basic value-backed accessors
-2. [v2](design-v2.md): Write side effects
-3. [v3](design-v3.md): Custom data sources and read transformations
+1. [Value-backed accessors](value-backed-accessors.md): Basic value-backed accessors over internal values
+2. [Composable setters](composable-setters.md): Write side effects, transformations, validation, etc.
+3. [Proxy accessors](proxy-accessors.md): Accessors that proxy another property
 
 Eventually, these can be split into separate proposals.
 
@@ -144,7 +144,7 @@ Eventually, these can be split into separate proposals.
 
 ### [Grouped accessors and auto-accessors](https://github.com/tc39/proposal-grouped-and-auto-accessors)
 
-There is a small overlap between the two proposals when it comes to [value-backed accessors](design-v1.md), since auto-accessors also include a syntax for this, though implemented differently:
+There is a small overlap between the two proposals when it comes to [value-backed accessors](value-backed-accessors.md), since auto-accessors also include a syntax for this, though implemented differently:
 
 ```js
 class C {
@@ -171,7 +171,7 @@ class C {
 }
 ```
 
-This is **complementary** to some of the possible designs for this proposal, which depend on it for reducing repetition of the property name (see [v2](design-v2.md)).
+This is **complementary** to some of the possible designs for this proposal, which depend on it for reducing repetition of the property name (see [v2](composable-setters.md)).
 
 Beyond that, its extended syntax focuses around access control, e.g. public getters with private setters, which is also orthogonal to this proposal.
 
@@ -182,7 +182,7 @@ accessor y {
 }
 ```
 
-By offloading the simple data property use cases to this proposal, grouped accessors can focus on their core use cases around grouped accessors and improving the DX of class accessors with more complex access control.
+By offloading the simple data property use cases to this proposal, grouped accessors can focus on their core use cases around eliminating repetition and facilitating access control.
 
 ### [Decorators](https://github.com/tc39/proposal-decorators)
 

@@ -1,13 +1,22 @@
-# Value-backed Accessors v1: Basic value-backed accessors
+# Value-backed Accessors
 
-> [!NOTE]
-> All syntax and concepts are implicitly "to be bikeshedded". They are included to sketch ideas, not as concrete proposals.
+This explores the baseline syntax and implementation for **value-backed accessors**: accessors that behave as a regular data property, by proxying a value stored in an internal property.
+This also serves as an MVP for this proposal, as it alone addresses the first problem statement (facilitate declaring public data properties that are part of the class shape).
+
+Their primary value when used by themselves is that they allow defining public data properties that are part of the class shape, without the need for boilerplate, satisfying the first problem statement of [this proposal](README.md).
+However, they can be composed with other parts of the proposal to also make several common accessor use cases easier, satisfying the second problem statement.
+
+For value-backed accessors whose underlying value is stored in another property or property chain, see [proxy accessors](proxy-accessors.md).
+
 
 This document explores a potential MVP design for the proposal, focused around the first problem statement, i.e. making it possible for authors to define value-backed accessors with DX comparable to that of class fields.
 
-Then, [v2](design-v2.md) and later versions explore syntax extensions that address the second problem statement, i.e. expanding the syntax to facilitate other common value-backed accessor use cases.
+Then, [composable setters](composable-setters.md), [proxy accessors](proxy-accessors.md) and [get traps](get-traps.md) explore syntax extensions that address the second problem statement, i.e. expanding the syntax to facilitate other common value-backed accessor use cases.
 
 ## Detailed design
+
+> [!NOTE]
+> All syntax and concepts are implicitly "to be bikeshedded". They are included to sketch ideas, not as concrete proposals.
 
 The minimal syntax to express intent for these use cases would be:
 
@@ -48,7 +57,7 @@ We could later introduce a descriptor or some other way to specify or read this 
 
 Since accessors are available in both classes and object literals, value-backed accessors should also be available across both.
 
-If no interception logic is desired ([v2](design-v2.md)), the syntax should look as close as possible to a class field (or a data property in an object literal), in the interest of paving the way from one to the other.
+If no additional logic is desired, the syntax should look as close as possible to a class field (or a data property in an object literal), in the interest of paving the way from one to the other.
 
 There are two options here:
 1. Prepend with a keyword (e.g. `tobikeshed foo = 1`)
