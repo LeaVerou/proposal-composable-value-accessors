@@ -1,4 +1,4 @@
-# Value-backed Accessors
+# Composable Value-backed Accessors
 
 ## Status
 
@@ -7,6 +7,11 @@
 **Authors:** Lea Verou (@leaverou)
 
 **Champions:** Lea Verou (@leaverou)
+
+
+This proposal explores ways to make it easier to define **_additive_ or _composable_ accessors**:
+Rather than the mental model of replacing a property with arbitrary code that regular accessors use,
+composable accessors are **value-backed**: as a baseline they proxy another property (stored in an internal slot by default, or provided by another property), and any validation logic, transformations, side effects, etc. are layered over that baseline.
 
 ## Contents
 
@@ -25,35 +30,16 @@
 
 
 
-This proposal explores ways to make it easier to define **_additive_ accessors**:
-accessors that are backed by an actual value, stored in a private slot by default.
-Value-backed accessors are defined as their delta over a regular data property, rather than as a replacement for it.
-
-The primary goal is to provide a way for authors to include data properties in a class' public API, as opposed to class fields which do not alter the class shape.
-A secondary goal is to facilitate several common accessor use cases.
-
-For example, one potential API shape might be something like:
-
-```js
-class A {
-	property foo = 1;
-	property bar = 2 {
-		set (value) {
-			return Number(value);
-		}
-	}
-}
-```
 
 ## Motivation
 
 This proposal addresses two separate problem statements:
 1. Authors should be able to easily define **public data properties that are part of a class' public API** and are introspectable without creating instances, just like regular accessors are.
-2. The vast majority of accessor use cases are **conceptually layered over a regular data property**, and today need repetitive boilerplate. Authors should be able to define these accessors with a better [signal-to-noise ratio](https://lea.verou.me/blog/2025/user-effort/#signal-to-noise).
+2. The vast majority of accessor use cases are **conceptually layered over a regular data property**, and today require repetitive boilerplate. Authors should be able to define these accessors with a better [signal-to-noise ratio](https://lea.verou.me/blog/2025/user-effort/#signal-to-noise).
 
-While these problems seem orthogonal, we believe they should be solved together.
+While these problems seem orthogonal, we believe they should be **solved together**.
 While trying to address both with the same solution does somewhat constrain the solution space, we believe that this is a good thing,
-and that introducing two different primitives to solve these problems would unnecessarily bloat the language.
+and that introducing two different primitives to solve these problems would add avoidable bloat to the language.
 
 ### No way to define data properties that are part of the class shape
 
