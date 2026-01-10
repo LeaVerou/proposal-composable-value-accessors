@@ -89,8 +89,8 @@ get foo() {
 	return this._foo;
 }
 set foo(value) {
-	if (Number.isNaN(value)) {
-		throw SomeError("foo should be a number, got " + value);
+	if (isNaN(value)) {
+		throw SomeError("foo should be numeric, got " + value);
 		// or just return
 	}
 
@@ -234,5 +234,4 @@ This highlights exactly why the two problem statements should be solved together
 A userland decorator could probably solve the second problem statement, though it would be somewhat awkward to specify the necessary logic.
 But to solve the first problem, the syntax for defining these fields needs to be **ubiquitous**.
 If authors need to pull in utilities and helpers to define the shape of their classes, the path of least resistance is to continue to just use class fields.
-
 
