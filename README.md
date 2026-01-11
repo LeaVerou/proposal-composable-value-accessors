@@ -8,26 +8,36 @@
 
 **Champions:** Lea Verou (@leaverou)
 
-
-This proposal explores ways to make it easier to define **_additive_ or _composable_ accessors**:
-Rather than the mental model of replacing a property with arbitrary code that regular accessors use,
-composable accessors are **value-backed**: as a baseline they proxy another property (stored in an internal slot by default, or provided by another property), and any validation logic, transformations, side effects, etc. are layered over that baseline.
-
 ## Contents
 
 1. [Status](#status)
-2. [Motivation](#motivation)
-   1. [No way to define data properties that are part of the class shape](#no-way-to-define-data-properties-that-are-part-of-the-class-shape)
-   2. [Most accessor use cases are value-backed and currently need boilerplate](#most-accessor-use-cases-are-value-backed-and-currently-need-boilerplate)
-3. [Detailed design](#detailed-design)
-4. [Relationship to other proposals](#relationship-to-other-proposals)
+2. [Introduction](#introduction)
+3. [Motivation](#motivation)
+   1. [1. No way to define data properties that are part of the class shape](#1-no-way-to-define-data-properties-that-are-part-of-the-class-shape)
+   2. [2. Most accessor use cases are value-backed and currently need boilerplate](#2-most-accessor-use-cases-are-value-backed-and-currently-need-boilerplate)
+   3. [Why solve them together?](#why-solve-them-together)
+4. [Detailed design](#detailed-design)
+   1. [1. Value-backed accessors](#1-value-backed-accessors)
+   2. [2. Alias accessors](#2-alias-accessors)
+   3. [3. Composable setters](#3-composable-setters)
+5. [Relationship to other proposals](#relationship-to-other-proposals)
    1. [Grouped accessors and auto-accessors](#grouped-accessors-and-auto-accessors)
    2. [Decorators](#decorators)
    3. [First-class protocols](#first-class-protocols)
-5. [FAQ](#faq)
+6. [FAQ](#faq)
    1. [Isn't it much slower to create an accessor for every public data property?](#isnt-it-much-slower-to-create-an-accessor-for-every-public-data-property)
    2. [Why not just use decorators?](#why-not-just-use-decorators)
 
+
+## Introduction
+
+This proposal explores ways to make it easier to define **_additive_ or _composable_ accessors**:
+Rather than the mental model of replacing a property with arbitrary code that regular accessors are designed around,
+composable accessors are **value-backed**: as a baseline they proxy another property (stored in an internal slot by default, or provided by another property), and any validation logic, transformations, side effects, etc. are **layered over that baseline**.
+
+In addition to improving ergonomics for common accessor use cases, this also provides classes an alternative to class fields to define data properties that are part of their public API with comparable ergonomics.
+
+While Stage 1 is primarily about the [problem statement](#motivation), just to make things a little more concrete, the current brainstorming around potential solutions is included in the [detailed design](#detailed-design) section.
 
 ## Motivation
 
@@ -35,11 +45,9 @@ This proposal addresses two separate problem statements:
 1. Authors should be able to easily define **public data properties that are part of a class' public API** and are introspectable without creating instances, just like regular accessors are.
 2. The vast majority of accessor use cases are **conceptually layered over a regular data property**, and today require repetitive boilerplate. Authors should be able to define these accessors with a better [signal-to-noise ratio](https://lea.verou.me/blog/2025/user-effort/#signal-to-noise).
 
-While these problems seem orthogonal, we believe they should be **solved together**.
-While trying to address both with the same solution does somewhat constrain the solution space, we believe that this is a good thing,
-and that introducing two different primitives to solve these problems would add avoidable bloat to the language.
+While these problems seem orthogonal, we believe it would be overall better for the language to solve them together.
 
-### No way to define data properties that are part of the class shape
+### 1. No way to define data properties that are part of the class shape
 
 The only declarative way classes can currently define public data properties is through **public class fields**.
 
@@ -68,11 +76,7 @@ Given that classes often have numerous public fields, this is not manageable.
 
 In the Nov 2025 plenary while there wasn't consensus that public class fields can be exposed as they often hold implementation details (this was a core reason [class field introspection](https://github.com/leaverou/proposal-class-field-introspection/) did not advance to Stage 1), there was generally **consensus** in the room that a way is needed for classes to be able to **declare which of their public data properties are actually public API**.
 
-Since **accessors are already part of the class shape**, a natural, maximally minimal design is to provide a way to define public accessors that function like regular data properties with DX comparable to that of class fields.
-
-But if we piggyback on accessors and provide an easy shortcut for value-backed accessors, this opens up possibilities for fixing some of _their_ issues around related use cases, feeding two birds with one scone.
-
-### Most accessor use cases are value-backed and currently need boilerplate
+### 2. Most accessor use cases are value-backed and currently need boilerplate
 
 The current mental model behind accessor syntax  is that they replace a property with entirely arbitrary code.
 This makes complex things possible, but simple things are not easy.
@@ -128,17 +132,149 @@ Some (not mutually exclusive) reasons for this are:
 - **Ergonomics**: shorten frequently accessed property chains
 - **Access control**: private properties with public getters
 
+### Why solve them together?
+
+Since **accessors are already part of the class shape**, a natural, maximally minimal design is to provide a way to define public accessors that function like regular data properties with DX comparable to that of class fields.
+
+But if we piggyback on accessors and provide an easy shortcut for value-backed accessors, this opens up possibilities for fixing some of _their_ issues around additive use cases, feeding two birds with one scone.
+
+While these problems seem orthogonal, **we believe they should be solved together**.
+It can be argued that trying to address both with the same solution does somewhat constrain the solution space for each, but this is a good thing.
+Given that they _can_ be solved together, introducing different primitives to solve them separately would unnecessarily clutter the language.
+
 ## Detailed design
 
-Since Stage 1 is mainly about the problem statement, and any proposed solutions are strawmen to be bikeshedded, the current brainstorming around design & implementation is moved to separate documents.
-
-Additionally, it has been layered into three separate sub-proposals which can ship independently:
-
-1. [Value-backed accessors](value-backed-accessors.md): Basic value-backed accessors over internal values
-2. [Composable setters](composable-setters.md): Write side effects, transformations, validation, etc.
-3. [alias accessors](alias-accessors.md): Accessors that proxy another property
+Since Stage 1 is mainly about the problem statement, and any proposed solutions are strawmen to be bikeshedded, the current brainstorming around design & implementation is moved to separate documents, summarized below.
 
 Eventually, these can be split into separate proposals.
+
+
+> [!IMPORTANT]
+> **Any syntax is shown for illustrative purposes only** and is not part of the proposal (yet).
+
+### 1. [Value-backed accessors](value-backed-accessors.md)
+
+A shortcut to define accessors that set data on an internal slot, sans the cognitive overhead of defining a separate property to hold the data.
+Unlike class fields, they become part of the class shape, so they can be introspected just like regular accessors.
+They _may_ look like this:
+
+<table><thead><tr><th>Closest current syntax</th><th>Potential new syntax</th></tr></thead>
+<tr valign="top"><td>
+
+```js
+class C {
+  #foo = 1;
+  get foo () { return this.#foo; }
+  set foo (value) { this.#foo = value; }
+}
+```
+</td><td>
+
+```js
+class C {
+  property foo = 1;
+}
+```
+</tr><tr valign="top"><td>
+
+```js
+let foo = Symbol("foo");
+let obj = {
+  [foo]: 1,
+  get foo () { return this[foo];  }
+  set foo (value) { this[foo] = value; }
+}
+```
+</td><td>
+
+```js
+let obj = {
+  property foo: 1,
+}
+```
+</td></tr></table>
+
+### 2. [Alias accessors](alias-accessors.md)
+
+A shortcut to define accessors that proxy another property or property chain on the same object. They _may_ look like this:
+
+<table><thead><tr><th>Closest current syntax</th><th>Potential new syntax</th></tr></thead>
+<tr valign="top"><td>
+
+```js
+class C {
+  #foo = new Signal(1);
+  get foo () { return this.#foo.value; }
+  set foo (value) { this.#foo.value = value; }
+}
+```
+</td><td>
+
+```js
+class C {
+  alias foo = new Signal(1);
+}
+```
+</tr><tr valign="top"><td>
+
+```js
+let foo = Symbol("foo");
+let obj = {
+  [foo]: 1,
+  get foo () { return this[foo];  }
+  set foo (value) { this[foo] = value; }
+}
+```
+</td><td>
+
+```js
+let obj = {
+  property foo: 1,
+}
+```
+</td></tr></table>
+
+### 3. [Composable setters](composable-setters.md)
+
+A way to define side effects, transformations, validation, etc. that are layered over a regular accessor (of any type). _One_ possible syntax might be:
+
+<table><thead><tr><th>Closest current syntax</th><th>Potential new syntax</th></tr></thead>
+<tr valign="top"><td>
+
+```js
+class C {
+  #foo = 0;
+
+  get foo () {
+    return this.#foo;
+  }
+
+  set foo (value) {
+    if (!isNaN(value)) {
+      return;
+    }
+    this.#foo = Number(value);
+   }
+}
+```
+</td><td>
+
+```js
+class C {
+	property foo = 0;
+
+	validate foo (value) {
+		return !isNaN(value);
+	}
+
+	normalize foo (value) {
+		return Number(value);
+	}
+}
+```
+</tr></table>
+
+This particular syntax depends on the [grouped accessors](https://github.com/tc39/proposal-grouped-and-auto-accessors) proposal for improved ergonomics.
 
 ## Relationship to other proposals
 

@@ -110,7 +110,17 @@ So the **syntax to be bikeshedded** is:
    - `through`
    - `to`
 
-For concreteness, we’ll use `alias`/`to` in the rest of this document.
+A big advantage of `=` however is that it automatically becomes `:` in object literals.
+If we pick a keyword, it's unclear how that translates to object literals.
+This looks quite weird:
+
+```js
+let obj = {
+	alias foo to foo.value,
+}
+```
+
+Therefore, for concreteness, we’ll use `alias`/`=` in the rest of this document.
 
 These property chains are basically chains of <tt>[</tt> <tt>.</tt> <em>LiteralPropertyName</em> <tt>]</tt> <tt>|</tt> <em>ComputedPropertyName</em> <tt>]</tt>.
 `this.` at the start is implicit.
@@ -122,7 +132,7 @@ While by default both a setter and a getter would be added, [composable setters]
 ```js
 class C {
 	#foo = 1;
-	alias #foo as foo;
+	alias #foo = foo;
 	validate foo (value) {
 		// or throw, for loud rejection
 		return false;
@@ -135,7 +145,7 @@ Do note however that if the property being proxied is read-only, the error would
 ```js
 class MyElement extends HTMLElement {
 	#internals = this.attachInternals();
-	alias form to #internals.form;
+	alias form = #internals.form;
 	// ...
 }
 ```
