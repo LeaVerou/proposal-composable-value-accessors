@@ -154,9 +154,18 @@ class C {
 
 However, for basic value-backed accessors, **the mental model should be declaring a data property**, and accessors are an implementation detail that should not drive syntax.
 
-Additionally, auto-accessors are based on private fields, which makes it hard to extend to objects (at least without [private declarations](https://github.com/tc39/proposal-private-declarations)), and creates a confusing error condition: you can't have a `foo` accessor and a `#foo` private member, although the author never defined a `#foo` property.
-This breaks the principle of least surprise.
-The slot where the data is stored should be an **implementation detail**, not something the author needs to be concerned about, unless they specify it explicitly.
+Additionally, auto-accessors are based on **private fields**, which makes it hard to extend to objects (at least without [private declarations](https://github.com/tc39/proposal-private-declarations)).
+They include syntax that indirectly references private fields, creating some **confusing error conditions**, e.g. you can't have a `#set` accessor on a `foo` property if you already have a `#foo` private member, even though nothing in the syntax references `#foo` explicitly:
+
+```js
+class C {
+  #y;
+  accessor y { get; #set; }; // error (collides with #y)
+}
+```
+
+> [!NOTE]
+> This has been reaised as an issue and is being discussed in [proposal-grouped-and-auto-accessors/#10](https://github.com/tc39/proposal-grouped-and-auto-accessors/issues/10)
 
 Beyond that minimal shared core, the two proposals solve different problems and **compose nicely**, with each making the other stronger.
 
@@ -171,18 +180,12 @@ class C {
 }
 ```
 
-This is **complementary** to some of the possible designs for this proposal, which depend on it for reducing repetition of the property name (see [v2](composable-setters.md)).
+This is **complementary** to some of the possible designs for this proposal, which **depend on it** for reducing repetition of the property name (see [v2](composable-setters.md)).
 
 Beyond that, its extended syntax focuses around access control, e.g. public getters with private setters, which is also orthogonal to this proposal.
 
-```js
-accessor y {
-	get() { ... } // equivalent to `get y() { ... }`
-	#set(value) { ... } // equivalent to `set #y(value) { ... }`
-}
-```
-
-By offloading the simple data property use cases to this proposal, grouped accessors can focus on their core use cases around eliminating repetition and facilitating access control.
+By offloading the simple data property use cases to this proposal, this proposal can focus on their core use cases around eliminating repetition and facilitating access control.
+Or perhaps, down the line, the two can be merged, as they do share the same broad problem statements.
 
 ### [Decorators](https://github.com/tc39/proposal-decorators)
 
