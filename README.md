@@ -41,7 +41,7 @@ and that introducing two different primitives to solve these problems would add 
 
 ### No way to define data properties that are part of the class shape
 
-The only way classes can currently define public data properties is through **public class fields**.
+The only declarative way classes can currently define public data properties is through **public class fields**.
 
 This is problematic for a number of reasons:
 - Class fields are not available until instance creation time, which means the class itself **cannot be introspected** for its full API shape which limits metaprogramming.
