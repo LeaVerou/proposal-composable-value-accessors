@@ -45,7 +45,7 @@ This proposal addresses two separate problem statements:
 1. Authors should be able to easily define **public data properties that are part of a class' public API** and are introspectable without creating instances, just like regular accessors are.
 2. The vast majority of accessor use cases are **conceptually layered over a regular data property**, and today require repetitive boilerplate. Authors should be able to define these accessors with a better [signal-to-noise ratio](https://lea.verou.me/blog/2025/user-effort/#signal-to-noise).
 
-While these problems seem orthogonal, we believe it would be overall better for the language to solve them together.
+While these problems seem orthogonal, we believe it would be overall better for the language to [solve them together](#why-solve-them-together).
 
 ### 1. No way to define data properties that are part of the class shape
 
