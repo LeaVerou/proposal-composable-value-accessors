@@ -6,7 +6,7 @@ There is a large class of use cases that are basically a data property + setter 
 This includes side effects, transformations, validation, etc.
 
 [Value-backed accessors](value-backed-accessors.md) explore a baseline syntax and implementation to facilitate easy specification of accessors that proxy an internal value, and
-[Proxy accessors](proxy-accessors.md) explore easy specification of accessors that proxy another existing property or property chain.
+[alias accessors](alias-accessors.md) explore easy specification of accessors that proxy another existing property or property chain.
 The extensions in this document are designed to layer on top of these, but can technically be layered on top of regular accessors too.
 
 > [!NOTE]

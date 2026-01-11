@@ -6,12 +6,12 @@ This also serves as an MVP for this proposal, as it alone addresses the first pr
 Their primary value when used by themselves is that they allow defining public data properties that are part of the class shape, without the need for boilerplate, satisfying the first problem statement of [this proposal](README.md).
 However, they can be composed with other parts of the proposal to also make several common accessor use cases easier, satisfying the second problem statement.
 
-For value-backed accessors whose underlying value is stored in another property or property chain, see [proxy accessors](proxy-accessors.md).
+For value-backed accessors whose underlying value is stored in another property or property chain, see [alias accessors](alias-accessors.md).
 
 
 This document explores a potential MVP design for the proposal, focused around the first problem statement, i.e. making it possible for authors to define value-backed accessors with DX comparable to that of class fields.
 
-Then, [composable setters](composable-setters.md), [proxy accessors](proxy-accessors.md) and [get traps](get-traps.md) explore syntax extensions that address the second problem statement, i.e. expanding the syntax to facilitate other common value-backed accessor use cases.
+Then, [composable setters](composable-setters.md), [alias accessors](alias-accessors.md) and [get traps](get-traps.md) explore syntax extensions that address the second problem statement, i.e. expanding the syntax to facilitate other common value-backed accessor use cases.
 
 ## Detailed design
 

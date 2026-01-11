@@ -136,7 +136,7 @@ Additionally, it has been layered into three separate sub-proposals which can sh
 
 1. [Value-backed accessors](value-backed-accessors.md): Basic value-backed accessors over internal values
 2. [Composable setters](composable-setters.md): Write side effects, transformations, validation, etc.
-3. [Proxy accessors](proxy-accessors.md): Accessors that proxy another property
+3. [alias accessors](alias-accessors.md): Accessors that proxy another property
 
 Eventually, these can be split into separate proposals.
 
