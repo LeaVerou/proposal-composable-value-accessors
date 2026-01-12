@@ -232,6 +232,7 @@ let obj = {
 
 ```js
 let obj = {
+  [foo]: new Signal(1),
   alias foo: [foo].value,
 }
 ```
