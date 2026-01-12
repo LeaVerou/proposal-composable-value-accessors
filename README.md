@@ -196,7 +196,9 @@ let obj = {
 
 ### 2. [Alias accessors](alias-accessors.md)
 
-A shortcut to define accessors that proxy another property or property chain on the same object. They _may_ look like this:
+A shortcut to define accessors that proxy another property or property chain on the same object.
+Essentially value-backed accessors where the property the value is stored in is customizable.
+They _may_ look like this:
 
 <table><thead><tr><th>Closest current syntax</th><th>Potential new syntax</th></tr></thead>
 <tr valign="top"><td>
@@ -212,7 +214,8 @@ class C {
 
 ```js
 class C {
-  alias foo = new Signal(1);
+  #foo = new Signal(1);
+  alias foo = #foo.value;
 }
 ```
 </tr><tr valign="top"><td>
@@ -220,16 +223,16 @@ class C {
 ```js
 let foo = Symbol("foo");
 let obj = {
-  [foo]: 1,
-  get foo () { return this[foo];  }
-  set foo (value) { this[foo] = value; }
+  [foo]: new Signal(1),
+  get bar () { return this[foo].value;  }
+  set bar (value) { this[foo].value = value; }
 }
 ```
 </td><td>
 
 ```js
 let obj = {
-  alias foo: [foo],
+  alias foo: [foo].value,
 }
 ```
 </td></tr></table>
