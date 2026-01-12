@@ -229,7 +229,7 @@ let obj = {
 
 ```js
 let obj = {
-  property foo: 1,
+  alias foo: [foo],
 }
 ```
 </td></tr></table>
