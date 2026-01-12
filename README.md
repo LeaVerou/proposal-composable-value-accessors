@@ -231,6 +231,7 @@ let obj = {
 </td><td>
 
 ```js
+let foo = Symbol("foo");
 let obj = {
   [foo]: new Signal(1),
   alias foo: [foo].value,
