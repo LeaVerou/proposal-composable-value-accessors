@@ -152,7 +152,7 @@ Eventually, these can be split into separate proposals.
 > [!IMPORTANT]
 > **Any syntax is shown for illustrative purposes only** and is not part of the proposal (yet).
 
-### 1. [Value-backed accessors](value-backed-accessors.md)
+### 1. [Value-backed accessors](ideas/value-backed-accessors.md)
 
 A shortcut to define accessors that set data on an internal slot, sans the cognitive overhead of defining a separate property to hold the data.
 Unlike class fields, they become part of the class shape, so they can be introspected just like regular accessors.
@@ -194,7 +194,7 @@ let obj = {
 ```
 </td></tr></table>
 
-### 2. [Alias accessors](alias-accessors.md)
+### 2. [Alias accessors](ideas/alias-accessors.md)
 
 A shortcut to define accessors that proxy another property or property chain on the same object.
 Essentially value-backed accessors where the property the value is stored in is customizable.
@@ -239,7 +239,7 @@ let obj = {
 ```
 </td></tr></table>
 
-### 3. [Composable setters](composable-setters.md)
+### 3. [Composable setters](ideas/composable-setters.md)
 
 A way to define side effects, transformations, validation, etc. that are layered over a regular accessor (of any type). _One_ possible syntax might be:
 
@@ -285,7 +285,7 @@ This particular syntax depends on the [grouped accessors](https://github.com/tc3
 
 ### [Grouped accessors and auto-accessors](https://github.com/tc39/proposal-grouped-and-auto-accessors)
 
-There is a small overlap between the two proposals when it comes to [value-backed accessors](value-backed-accessors.md), since auto-accessors also include a syntax for this, though implemented differently:
+There is a small overlap between the two proposals when it comes to [value-backed accessors](ideas/value-backed-accessors.md), since auto-accessors also include a syntax for this, though implemented differently:
 
 ```js
 class C {
@@ -321,7 +321,7 @@ class C {
 }
 ```
 
-This is **complementary** to some of the possible designs for this proposal, which **depend on it** for reducing repetition of the property name (see [v2](composable-setters.md)).
+This is **complementary** to some of the possible designs for this proposal, which **depend on it** for reducing repetition of the property name (see [v2](ideas/composable-setters.md)).
 
 Beyond that, its extended syntax focuses around access control, e.g. public getters with private setters, which is also orthogonal to this proposal.
 
