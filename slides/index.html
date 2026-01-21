@@ -565,7 +565,7 @@
 			</style>
 			<thead>
 				<tr>
-					<th></th>
+					<th>Direction</th>
 					<th>
 						<span class="badge">Option 1</span> New MethodDefinition keywords & descriptor keys
 					</th>
@@ -592,13 +592,13 @@
 			<tbody>
 				<tr>
 					<th>Scope</th>
-					<td class="x">More substantial change</td>
-					<td class="yes">Smaller delta, low-fi way to prototype</td>
+					<td class="x">Much substantial change</td>
+					<td class="yes">Smaller delta</td>
 				</tr>
 				<tr>
 					<th>Readability</th>
 					<td class="yes">Important bits first</td>
-					<td class="soso">Auxiliary bits first. Mitigated through references rather than inline functions.</td>
+					<td class="soso">Auxiliary bits first. Mitigated through references for longer functions.</td>
 				</tr>
 				<tr>
 					<th>Lossiness</th>
@@ -611,7 +611,7 @@
 					<th>Imperative API</th>
 					<td class="yes md">`Object.defineProperty()`</td>
 					<td class="soso">None (by design).
-						Can be mitigated via object decorators.
+						Can be mitigated via object literal decorators.
 					</td>
 				</tr>
 				<!-- <tr>
@@ -630,6 +630,16 @@
 		<details class="notes md">
 			Technically another option would be to have the same `validate()` syntax that is just sugar, but then there is no benefit over a (built-in) decorator
 		</details>
+	</article>
+
+	<article class="slide">
+		<h2>Additional advantages of using built-in decorators</h2>
+
+		<ul>
+			<li>Low-fi, polyfillable way to test the waters. Syntax always a later possibility if there’s demand.</li>
+			<li>Can extend to non-property values (e.g. validate function arguments!)</li>
+			<li>Even more motivation for implementors to support decorators 😉</li>
+		</ul>
 	</article>
 <!--
 	<article class="slide dont-resize">
@@ -813,6 +823,96 @@
 	</ul>
 </article>
 
+<article class="slide xdont-resize">
+	<h2>Syntax for layers?</h2>
+
+	<table>
+		<style>
+			@scope {
+				td {
+					width: 41%;
+				}
+			}
+		</style>
+		<thead>
+			<tr>
+				<th>Direction</th>
+				<th>
+					<span class="badge">Option 1</span> New MethodDefinition keywords & descriptor keys
+				</th>
+				<th>
+					<span class="badge">Option 2</span>Built-in decorators
+				</th>
+			</tr>
+			<tr>
+				<th scope="row">Example</th>
+				<td>
+					<pre style="font-size: 80%"><code>
+						property n = 0;
+						validate n (v) { return v >= 0; }
+					</code></pre>
+				</td>
+				<td>
+					<pre style="font-size: 80%"><code>
+						@validate(v => v >= 0)
+						property n = 0;
+					</code></pre>
+				</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th>Scope</th>
+				<td class="x">Much substantial change</td>
+				<td class="yes">Smaller delta</td>
+			</tr>
+			<tr>
+				<th>Readability</th>
+				<td class="yes">Important bits first</td>
+				<td class="soso">Auxiliary bits first. Mitigated through references for longer functions.</td>
+			</tr>
+			<tr>
+				<th>Lossiness</th>
+				<td class="yes md">Remain separate from `set` → lossless. <br>Can even be decorated separately!</td>
+				<td class="soso">Sugar that wraps <code>set</code> → lossy.
+					Can be designed to preserve the original setter somewhere.
+				</td>
+			</tr>
+			<tr>
+				<th>Imperative API</th>
+				<td class="yes md">`Object.defineProperty()`</td>
+				<td class="soso">None (by design).
+					Can be mitigated via object literal decorators.
+				</td>
+			</tr>
+			<!-- <tr>
+				<th>Object literal support?</th>
+				<td class="yes">Out of the box</td>
+				<td class="x md">[Speculative future extension](https://github.com/tc39/proposal-decorators/blob/master/EXTENSIONS.md)</td>
+			</tr> -->
+			<!-- <tr>
+				<th>Composability</th>
+				<td class="yes">Could compose with any member</td>
+				<td class="x">Can only be applied to accessors</td>
+			</tr> -->
+		</tbody>
+	</table>
+
+	<details class="notes md">
+		Technically another option would be to have the same `validate()` syntax that is just sugar, but then there is no benefit over a (built-in) decorator
+	</details>
+</article>
+
+<article class="slide">
+	<h2>Additional advantages of using built-in decorators</h2>
+
+	<ul>
+		<li>Low-fi, polyfillable way to test the waters. Syntax always a later possibility if there’s demand.</li>
+		<li>Can extend to non-property values (e.g. validate function arguments!)</li>
+		<li>Even more motivation for implementors to support decorators 😉</li>
+	</ul>
+</article>
+
 <article class="slide">
 	<h2>During the break…</h2>
 
@@ -842,25 +942,26 @@
 	</ol>
 </article>
 
-<article class="slide">
+<article class="slide dont-resize">
 	<h2>Composable accessors via built-in decorators</h2>
 
 	<div class="sbs">
 		<div>
 			<p><strong>Problem statement:</strong>
-				There are large classes of accessor use cases with strong commonalities and they deserve better DX and tooling support.</p>
+				There are large classes of accessor use cases with strong commonalities and they deserve better DX and tooling support.
+			</p>
 			<p>
 				This proposal aims to explore which of these would have good Impact/Effort to expose as <strong>built-in decorators</strong>.
 			</p>
 		</div>
 
 		<pre><code>
-			let { validate, lazy } = SomeTBDNamespace;
-			import isFoo, implementsBar from "./validators.js";
+			import isFoo, hasBar from "./validators.js";
+			const { validate, lazy } = SomeObject;
 
 			class C {
-				// Indicative signature, do not bikeshed!
-				@validate(isFoo, implementsBar) accessor foo;
+				// Indicative signature, do not 🚲shed!
+				@validate(isFoo, hasBar) accessor foo;
 
 				@lazy accessor foo {
 					get () {
@@ -883,7 +984,7 @@
 	<div class="sbs">
 		<ul>
 			<li>Could eventually be merged into the auto-accessors / grouped accessors proposal (see <a href="https://github.com/tc39/proposal-grouped-and-auto-accessors/issues/14">#14</a>)</li>
-			<li>Ron had some implementation / speccing concerns but these seemed non-blocking for Stage 1</li>
+			<li>Ron had some implementation / speccing concerns but they were non-blocking for Stage 1</li>
 		</ul>
 		<pre><code>
 			class C {
