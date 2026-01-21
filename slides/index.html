@@ -99,36 +99,48 @@
 		<h2>Can we fix accessors while we’re at it?</h2>
 	</article>
 
-	<article class="slide md">
-		<h2>Making complex things possible <em>composably</em></h2>
+	<article class="slide columns">
+		<h2>Simple things and complex things</h2>
 
-		- We all know that good APIs make **simple things easy, and complex things possible**.
-		- Bust **most complex things are _additive_**: the simple thing + a little added functionality
-		- _How_ we make complex things possible is also important
+		<ul class="md-children">
+			<li>We all know that good APIs make **simple things easy, and complex things possible**.</li>
+			<li>But _how_ we make complex things possible matters a lot.</li>
+			<li class="delayed">**Most complex things are _additive_**: the simple thing plus a little something</li>
+		</ul>
 
+		<object data="https://lea.verou.me/blog/2025/user-effort/images/curve-alankay.svg"></object>
 	</article>
 
-	<article class="slide columns">
+	<article class="slide columns" style="text-align: center;">
 		<h2>Making complex things possible</h2>
 
 		<section>
-			<h3>✅ Extensible simple things</h3>
-			<p>Functionality can be <strong>layered</strong> on top of the simple thing</p>
-			<p>TODO: add chart</p>
-		</section>
-		<section>
 			<h3>❌ Usability cliffs</h3>
-			<p>Doing a complex thing requires <strong>recreating</strong> the simple thing from scratch</p>
+			<p>
+				Doing a complex thing requires <strong>recreating</strong> the simple thing from scratch.<br>
+				Incremental value requires <strong>disproportionate additional effort</strong>.
+			</p>
+
 			<object data="https://lea.verou.me/blog/2025/user-effort/images/curve-cliff.svg"></object>
+			<p style="position: absolute; margin: -.5em 0 0 3em">Example: <code class="language-html">&lt;video controls></code> and custom video controls</p>
+		</section>
+		<section class="delayed">
+			<h3>✅ Extensible simple things</h3>
+			<p>
+				Functionality can be <strong>layered</strong> on top of the simple thing.<br>
+				Incremental value requires <strong>proportional additional effort</strong>.
+			</p>
+			<object data="https://lea.verou.me/blog/2025/user-effort/images/curve-multiple.svg#good"></object>
+			<p style="position: absolute; margin: -.5em 0 0 3em" class="md">Example: `Intl.DateTimeFormat`</p>
 		</section>
 	</article>
 
 	<article class="slide">
-		<h2>Accessors use the second model</h2>
+		<h2>Accessors use the first model</h2>
 
 		<ul>
 			<li>Most use cases are actually backed by a "real" data property</li>
-			<li>Yet accessors require all the "plumbing" to be rebuilt before any additional functionality can be layered on top</li>
+			<li>Yet accessors require all the "plumbing" to be rebuilt before any additional functionality can be layered over it</li>
 		</ul>
 	</article>
 
@@ -253,31 +265,14 @@
 		</div>
 	</article>
 
-	<article class="slide dont-resize">
-		<h2>Is “accessor” the right framing for the simple case?</h2>
-
-		<div class="sbs center">
-			<strong style="white-space: nowrap;">Current mental model:</strong>
-			<img src="images/accessor-flowchart.svg" alt="Accessor flowchart" style="flex: 1; min-width: 0">
-		</div>
-
-		<div class="sbs center delayed">
-			<pre><code>
-				class C {
-					accessor foo = 1;
-				}
-			</code></pre>
-			<img src="images/trollface.png" alt="Trollface">
-		</div>
-	</article>
-
 	<article class="slide">
 		<h2>Is “accessor” the right framing?</h2>
 
 		<div class="sbs">
 			<div>
-				<p>For the simple case, accessors are an <strong>implementation detail</strong>.</p>
+
 				<ul>
+					<li>For the simple case, accessors are an <strong>implementation detail</strong>.</li>
 					<li> User intent is not "I want an accessor" unless there is logic.</li>
 				</ul>
 			</div>
@@ -294,22 +289,42 @@
 		</details>
 	</article>
 
-	<article class="slide">
+	<article class="slide dont-resize">
+		<h2>Is “accessor” the right framing?</h2>
+
+		<div class="sbs center">
+			<strong style="white-space: nowrap;">Current mental model:</strong>
+			<img src="images/accessor-flowchart.svg" alt="Accessor flowchart" style="flex: 1; min-width: 0">
+		</div>
+
+		<div class="sbs center delayed">
+			<pre><code>
+				class C {
+					accessor foo = 1;
+				}
+			</code></pre>
+			<img src="images/trollface.png" alt="Trollface">
+		</div>
+	</article>
+
+	<article class="slide" id="problem-statements">
 		<h2>Problem statements</h2>
 
 		<ol>
-			<li>We need a high signal-to-noise ratio way to define data properties that become part of the class shape</li>
-			<li><em>Additive</em> accessor use cases are common enough to deserve better signal-to-noise ratio</li>
+			<li>We need a high signal-to-noise ratio way to define the <strong>data properties that are part of a class' public API</strong></li>
+			<li><strong><em>Additive</em> accessor use cases</strong> are common enough to deserve better DX</li>
+			<li>There are <a href="#why-together">good reasons</a> to solve these problems together</li>
 		</ol>
 	</article>
 
-	<article class="slide">
+	<article class="slide" id="why-together">
 		<h2>Why solve them together?</h2>
 
-		<ul>
-			<li>Class public data properties often evolve into additive accessors</li>
-			<li>Solving them together productively constrains the solution space and avoids language clutter</li>
-		</ul>
+		<ol>
+			<li>Public data properties often <strong>evolve</strong> into additive accessors</li>
+			<li>Solving them together <strong>productively constrains the solution space</strong> and prevents language clutter</li>
+			<li>For this to work, it needs to become <strong>universal</strong>. For it to become universal, it needs to provide enough <strong>value</strong>.</li>
+		</ol>
 	</article>
 </section>
 
@@ -398,6 +413,29 @@
 		</ul>
 	</article>
 
+	<article class="slide">
+		<h2><span class="badge block">Prior art</span> Swift property observers</h2>
+		<pre><code class="language-swift">
+			class StepCounter {
+				var totalSteps: Int = 0 {
+					willSet(newTotalSteps) {
+						print("About to set totalSteps to \(newTotalSteps)")
+					}
+					didSet {
+						if totalSteps > oldValue {
+							print("Added \(totalSteps - oldValue) new steps")
+						}
+					}
+				}
+			}
+		</code></pre>
+		<p><span class="badge">h/t</span>Thanks</span> HE Shi-Jun for the example!</p>
+		<details class="notes md">
+			- `willSet` cannot reject or transform writes
+			- Implicit `oldValue` in `didSet`
+		</details>
+	</article>
+
 	<article class="slide" data-type="Base">
 		<header class="base">
 			<h2>Internal property</h2>
@@ -436,8 +474,9 @@
 			</code></pre>
 		</div>
 		<ul>
-			<li>This is the one we need for public class properties</li>
-			<li>Eliminate cognitive overhead of naming another property</li>
+			<li>This is the one we need for most public class properties</li>
+			<li>Eliminate boilerplate + cognitive overhead of naming another property</li>
+			<li>Values stored in an internal slot that is not accessible outside accessor methods</li>
 		</ul>
 	</article>
 
@@ -635,6 +674,22 @@
 
 	</article>
 
+<!--
+<article class="slide dont-resize">
+	<h2>Auto-upgrade regular data properties?</h2>
+
+	<pre><code>
+		const obj = {a: 1};
+		let d = Object.getOwnPropertyDescriptor(obj, "a");
+		d; // { value: 1, writable: true, enumerable: true, configurable: true }
+		d.validate = function (v) { return v >= 0; };
+		Object.defineProperty(obj, "a", d);
+		d = Object.getOwnPropertyDescriptor(obj, "a");
+		d; // { get, set, validate, enumerable: true, configurable: true }
+	</code></pre>
+</article>
+-->
+
 <article class="slide dont-resize">
 	<h2>Auto-upgrade regular data properties?</h2>
 
@@ -673,8 +728,9 @@
 			};
 		</code></pre>
 	</div>
-
 </article>
+
+
 </section>
 
 <article class="slide">
@@ -687,6 +743,9 @@
 					validate n (v) {
 						return v >= 0;
 					}
+					normalize n (v) {
+						return Number(v);
+					}
 				}
 			</code></pre>
 		</div>
@@ -697,15 +756,51 @@
 					validate (v) {
 						return v >= 0;
 					}
+					normalize (v) {
+						return Number(v);
+					}
 				} = 0;
 			}
 		</code></pre>
 	</div>
 </article>
-
-<article class="slide">
-	<h2>Can I haz Stage 1?</h2>
+<!--
+<article class="slide dont-resize">
+	<h2>Example: silent read-only</h2>
+	<div class="sbs center">
+		<pre><code>
+			class C {
+				#n = 0;
+				get n () {
+					return this.#n;
+				}
+				set n (v) {}
+			}
+		</code></pre>
+		<div class="arrow-right"></div>
+		<pre><code>
+			class C {
+				#n = 0;
+				alias n = #n;
+				validate n (v) {
+					return false;
+				}
+			}
+		</code></pre>
+	</div>
 </article>
+-->
+
+<article class="slide dont-resize" id="stage-1">
+	<p style="margin-bottom: .5em;">Recap of problem statement:</p>
+
+	<div class="sbs">
+		<fake-slide for="problem-statements"></fake-slide>
+		<fake-slide for="why-together"></fake-slide>
+	</div>
+	<h2 style="margin-top: .5em;" class="delayed">Can I haz Stage 1?</h2>
+</article>
+
 
 <footer class="slide">
 	<h2>Thank you!</h2>

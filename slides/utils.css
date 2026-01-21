@@ -243,7 +243,7 @@ pre .filename {
 	box-shadow: 0 10px 1em -.6em black;
 	transform: rotate(45deg) translate(6em, var(--ribbon-offset, -2em));
 }
-
+/*
 .tobikeshed,
 .tobikeshed-children > * {
 	position: relative;
@@ -264,5 +264,5 @@ pre .filename {
 		font: bold 1.2em/1 var(--font-sans);
 		text-align: start;
 	}
-}
+} */
 

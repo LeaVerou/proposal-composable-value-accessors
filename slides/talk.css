@@ -199,7 +199,6 @@ thead th {
 			fill: none;
 			stroke: var(--color-orange);
 			stroke-width: 10;
-
 			stroke-linecap: round;
 			stroke-linejoin: round;
 			stroke-dasharray: 0 300;
@@ -224,4 +223,28 @@ thead th {
 			}
 		}
 	}
+}
+
+@layer theme {
+	fake-slide.slide:not(#nonexistent) {
+		display: flex !important;
+	}
+}
+
+#stage-1 {
+	background: var(--color-neutral-95);
+}
+
+fake-slide {
+	position: static;
+	box-sizing: border-box;
+	padding: .5em 1em;
+	aspect-ratio: tan(atan2(100vw, 100vh));
+	font-size: 70%;
+	width: 40vw;
+	visibility: visible;
+	z-index: 200;
+	border: 1px solid var(--color-neutral-70);
+	box-shadow: 0 0 1em rgba(0, 0, 0, .1);
+	background: white;
 }

@@ -9,3 +9,16 @@ Prism.languages.javascript.keyword.push({
 	// alias: "tobikeshed",
 });
 Prism.languages.javascript.keyword.push(/\baccessor\b/);
+
+
+class FakeSlide extends HTMLElement {
+	constructor() {
+		super();
+	}
+
+	connectedCallback() {
+		this.innerHTML = document.getElementById(this.getAttribute("for"))?.innerHTML;
+	}
+}
+
+customElements.define("fake-slide", FakeSlide);
