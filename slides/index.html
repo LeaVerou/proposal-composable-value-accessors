@@ -553,6 +553,280 @@
 	</article>
 
 	<article class="slide xdont-resize">
+		<h2>Syntax for layers? (old)</h2>
+
+		<table>
+			<style>
+				@scope {
+					td {
+						width: 41%;
+					}
+				}
+			</style>
+			<thead>
+				<tr>
+					<th></th>
+					<th>
+						<span class="badge">Option 1</span> New MethodDefinition keywords & descriptor keys
+					</th>
+					<th>
+						<span class="badge">Option 2</span>Built-in decorators
+					</th>
+				</tr>
+				<tr>
+					<th scope="row">Example</th>
+					<td>
+						<pre style="font-size: 80%"><code>
+							property n = 0;
+							validate n (v) { return v >= 0; }
+						</code></pre>
+					</td>
+					<td>
+						<pre style="font-size: 80%"><code>
+							@validate(v => v >= 0)
+							property n = 0;
+						</code></pre>
+					</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th>Scope</th>
+					<td class="x">More substantial change</td>
+					<td class="yes">Smaller delta</td>
+				</tr>
+				<tr>
+					<th>Readability</th>
+					<td class="yes">Important bits first</td>
+					<td class="x">Auxiliary bits first</td>
+				</tr>
+				<tr>
+					<th>Lossiness</th>
+					<td class="yes md">Remain separate from `set` → lossless. <br>Can even be decorated separately!</td>
+					<td class="x md">Sugar that wraps `set` → lossy</td>
+				</tr>
+				<tr>
+					<th>Imperative API</th>
+					<td class="yes md">`Object.defineProperty()`</td>
+					<td class="x">None (by design)</td>
+				</tr>
+				<tr>
+					<th>Object literal support?</th>
+					<td class="yes">Out of the box</td>
+					<td class="x md">[Speculative future extension](https://github.com/tc39/proposal-decorators/blob/master/EXTENSIONS.md)</td>
+				</tr>
+				<tr>
+					<th>Composeability</th>
+					<td class="yes">Could compose with any member</td>
+					<td class="x">Can only be applied to accessors</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<details class="notes md">
+			Technically another option would be to have the same `validate()` syntax that is just sugar, but then there is no benefit over a (built-in) decorator
+		</details>
+	</article>
+
+	<article class="slide">
+		<h2>Additional advantages of using built-in decorators</h2>
+
+		<ul>
+			<li>Low-fi, polyfillable way to test the waters. Syntax always a later possibility if there’s demand.</li>
+			<li>Can extend to non-property values (e.g. validate function arguments!)</li>
+			<li>Even more motivation for implementors to support decorators 😉</li>
+		</ul>
+	</article>
+
+	<article class="slide dont-resize">
+		<h2>Auto-upgrade regular data properties?</h2>
+
+		<div class="sbs center" style="gap: .4em">
+			<pre><code>
+				let obj = {
+					_n: 0,
+					get n () {
+						return this._n;
+					},
+					set n (v) {
+						if (v >= 0) {
+							this._n = v;
+						}
+					}
+				};
+			</code></pre>
+
+			<div class="arrow-right"></div>
+
+			<pre><code>
+				let obj = {
+					property n: 0,
+					validate n (v) {
+						return v >= 0;
+					}
+				};
+			</code></pre>
+
+			<div class="arrow-right"></div>
+
+			<pre><code>
+				let obj = {
+					n: 0,
+					validate n (v) {
+						return v >= 0;
+					}
+				};
+			</code></pre>
+		</div>
+
+	</article>
+
+<!--
+<article class="slide dont-resize">
+	<h2>Auto-upgrade regular data properties?</h2>
+
+	<pre><code>
+		const obj = {a: 1};
+		let d = Object.getOwnPropertyDescriptor(obj, "a");
+		d; // { value: 1, writable: true, enumerable: true, configurable: true }
+		d.validate = function (v) { return v >= 0; };
+		Object.defineProperty(obj, "a", d);
+		d = Object.getOwnPropertyDescriptor(obj, "a");
+		d; // { get, set, validate, enumerable: true, configurable: true }
+	</code></pre>
+</article>
+-->
+
+<article class="slide dont-resize">
+	<h2>Auto-upgrade regular data properties?</h2>
+
+	<div class="sbs center" style="gap: .4em">
+		<pre><code>
+			let obj = {
+				get n () {
+					return this._n;
+				},
+				set n (v) {
+					if (v >= 0) {
+						this._n = v;
+					}
+				}
+			};
+		</code></pre>
+
+		<div class="arrow-right"></div>
+
+		<pre><code>
+			let obj = {
+				property n,
+				validate n (v) {
+					return v >= 0;
+				}
+			};
+		</code></pre>
+
+		<div class="arrow-right"></div>
+
+		<pre><code>
+			let obj = {
+				validate n (v) {
+					return v >= 0;
+				}
+			};
+		</code></pre>
+	</div>
+</article>
+
+
+
+
+<article class="slide">
+	<h2>With grouped accessors</h2>
+	<div class="sbs center">
+		<div>
+			<pre><code>
+				class C {
+					property n = 0;
+					validate n (v) {
+						return v >= 0;
+					}
+					normalize n (v) {
+						return Number(v);
+					}
+				}
+			</code></pre>
+		</div>
+		<div class="arrow-right"></div>
+		<pre><code>
+			class C {
+				property n {
+					validate (v) {
+						return v >= 0;
+					}
+					normalize (v) {
+						return Number(v);
+					}
+				} = 0;
+			}
+		</code></pre>
+	</div>
+</article>
+<!--
+<article class="slide dont-resize">
+	<h2>Example: silent read-only</h2>
+	<div class="sbs center">
+		<pre><code>
+			class C {
+				#n = 0;
+				get n () {
+					return this.#n;
+				}
+				set n (v) {}
+			}
+		</code></pre>
+		<div class="arrow-right"></div>
+		<pre><code>
+			class C {
+				#n = 0;
+				alias n = #n;
+				validate n (v) {
+					return false;
+				}
+			}
+		</code></pre>
+	</div>
+</article>
+-->
+</section>
+
+<article class="slide dont-resize" id="stage-1">
+	<h2>Problem statements</h2>
+
+	<div class="sbs">
+		<fake-slide for="problem-statements"></fake-slide>
+		<fake-slide for="why-together"></fake-slide>
+	</div>
+</article>
+
+<section>
+	<header class="slide">
+		<h2>Second session</h2>
+	</header>
+
+
+	<article class="slide">
+		<h2>Recap of previous discussion</h2>
+
+		<ul>
+			<li>Strong consensus <strong>against</strong> solving composable accessors via <strong>syntax</strong></li>
+			<li>Strong consensus that <strong>auto-accessors</strong> are largely sufficient for <strong>public class data properties</strong></li>
+			<li>Consensus that solving <strong>composable accessors via built-in decorators</strong> is worth exploring</li>
+			<li>Tooling support brought up as an additional benefit of standardized functionality for this.</li>
+			<li>Mild interest in <strong>exploring alias accessors</strong> for delegation/forwarding use cases</li>
+		</ul>
+	</article>
+
+	<article class="slide xdont-resize">
 		<h2>Syntax for layers?</h2>
 
 		<table>
@@ -641,365 +915,94 @@
 			<li>Even more motivation for implementors to support decorators 😉</li>
 		</ul>
 	</article>
-<!--
-	<article class="slide dont-resize">
-		<h2>Auto-upgrade regular data properties?</h2>
 
-		<div class="sbs center" style="gap: .4em">
-			<pre><code>
-				let obj = {
-					_n: 0,
-					get n () {
-						return this._n;
-					},
-					set n (v) {
-						if (v >= 0) {
-							this._n = v;
+	<article class="slide">
+		<h2>During the break…</h2>
+
+		<blockquote class="md">
+			I'm looking at my accessors usage, and they are (numbers are not measured):
+
+			- 75% "property forwarding"
+			- 15% lazy initial computation
+			- 10% validation
+			- 5% other
+
+			— Nicolò Ribaudo
+		</blockquote>
+	</article>
+
+	<article class="slide">
+		<h2>Changes before moving to <code>tc39/</code></h2>
+
+		<ol>
+			<li><strong>Remove value-backed accessors</strong> and work with Ron Buckton to explore potential improvements to auto-accessors instead.</li>
+			<li>Focus this proposal on <strong>composable accessors</strong> and split into two proposals:
+				<ol>
+					<li>Composable accessors via built-in decorators</li>
+					<li>Alias accessors</li>
+				</ol>
+			</li>
+		</ol>
+	</article>
+
+	<article class="slide">
+		<h2>Composable accessors via built-in decorators</h2>
+
+		<div class="sbs">
+			<div>
+				<p><strong>Problem statement:</strong>
+					There are large classes of accessor use cases with strong commonalities and they deserve better DX and tooling support.
+				</p>
+				<p style="margin-top: 1em">
+					This proposal aims to explore which of these may have good Impact/Effort to expose as <strong>built-in decorators</strong>.
+				</p>
+			</div>
+
+			<pre style="font-size: 70%"><code>
+				import isFoo, hasBar from "./validators.js";
+				const { validate, lazy } = SomeObject;
+
+				class C {
+					// Signature tentative, do not 🚲shed!
+					@validate(isFoo, hasBar) accessor foo;
+
+					@lazy accessor foo {
+						get () {
+							return expensiveComputation();
 						}
 					}
-				};
-			</code></pre>
-
-			<div class="arrow-right"></div>
-
-			<pre><code>
-				let obj = {
-					property n: 0,
-					validate n (v) {
-						return v >= 0;
-					}
-				};
-			</code></pre>
-
-			<div class="arrow-right"></div>
-
-			<pre><code>
-				let obj = {
-					n: 0,
-					validate n (v) {
-						return v >= 0;
-					}
-				};
+				}
 			</code></pre>
 		</div>
+	</article>
 
-	</article> -->
+	<article class="slide">
+		<h2>Alias accessors</h2>
 
-<!--
-<article class="slide dont-resize">
-	<h2>Auto-upgrade regular data properties?</h2>
+		<p><strong>Problem statement:</strong>
+			Alias accessors are a particularly large class of accessor use cases and may be worth exploring separately,
+			as they are more likely to need syntax for reasonable DX and to access privates.
+		</p>
 
-	<pre><code>
-		const obj = {a: 1};
-		let d = Object.getOwnPropertyDescriptor(obj, "a");
-		d; // { value: 1, writable: true, enumerable: true, configurable: true }
-		d.validate = function (v) { return v >= 0; };
-		Object.defineProperty(obj, "a", d);
-		d = Object.getOwnPropertyDescriptor(obj, "a");
-		d; // { get, set, validate, enumerable: true, configurable: true }
-	</code></pre>
-</article>
--->
-<!--
-<article class="slide dont-resize">
-	<h2>Auto-upgrade regular data properties?</h2>
-
-	<div class="sbs center" style="gap: .4em">
-		<pre><code>
-			let obj = {
-				get n () {
-					return this._n;
-				},
-				set n (v) {
-					if (v >= 0) {
-						this._n = v;
-					}
-				}
-			};
-		</code></pre>
-
-		<div class="arrow-right"></div>
-
-		<pre><code>
-			let obj = {
-				property n,
-				validate n (v) {
-					return v >= 0;
-				}
-			};
-		</code></pre>
-
-		<div class="arrow-right"></div>
-
-		<pre><code>
-			let obj = {
-				validate n (v) {
-					return v >= 0;
-				}
-			};
-		</code></pre>
-	</div>
-</article> -->
-
-
-</section>
-<!--
-<article class="slide">
-	<h2>With grouped accessors</h2>
-	<div class="sbs center">
-		<div>
+		<div class="sbs">
+			<ul>
+				<li>Could eventually be merged into the auto-accessors / grouped accessors proposal (see <a href="https://github.com/tc39/proposal-grouped-and-auto-accessors/issues/14">#14</a>)</li>
+				<li>Ron had some implementation / speccing concerns but they were non-blocking for Stage 1</li>
+			</ul>
 			<pre><code>
 				class C {
-					property n = 0;
-					validate n (v) {
-						return v >= 0;
-					}
-					normalize n (v) {
-						return Number(v);
+					// Indicative syntax, do not bikeshed
+					alias foo = #foo.value;
+
+					alias bar = #internals.bar {
+						get;
+						#set;
 					}
 				}
 			</code></pre>
 		</div>
-		<div class="arrow-right"></div>
-		<pre><code>
-			class C {
-				property n {
-					validate (v) {
-						return v >= 0;
-					}
-					normalize (v) {
-						return Number(v);
-					}
-				} = 0;
-			}
-		</code></pre>
-	</div>
-</article> -->
-<!--
-<article class="slide dont-resize">
-	<h2>Example: silent read-only</h2>
-	<div class="sbs center">
-		<pre><code>
-			class C {
-				#n = 0;
-				get n () {
-					return this.#n;
-				}
-				set n (v) {}
-			}
-		</code></pre>
-		<div class="arrow-right"></div>
-		<pre><code>
-			class C {
-				#n = 0;
-				alias n = #n;
-				validate n (v) {
-					return false;
-				}
-			}
-		</code></pre>
-	</div>
-</article>
--->
-
-<article class="slide dont-resize" id="stage-1">
-	<h2>Original problem statements</h2>
-
-	<div class="sbs">
-		<fake-slide for="problem-statements"></fake-slide>
-		<fake-slide for="why-together"></fake-slide>
-	</div>
-</article>
-
-<article class="slide">
-	<h2>Recap of previous discussion</h2>
-
-	<ul>
-		<li>Strong consensus <strong>against</strong> solving composable accessors via <strong>syntax</strong></li>
-		<li>Strong consensus that <strong>auto-accessors</strong> are largely sufficient for <strong>public class data properties</strong></li>
-		<li>Consensus that solving <strong>composable accessors via built-in decorators</strong> is worth exploring</li>
-		<li>Tooling support brought up as an additional benefit of standardized functionality for this.</li>
-		<li>Mild interest in <strong>exploring alias accessors</strong> for delegation/forwarding use cases</li>
-	</ul>
-</article>
-
-<article class="slide xdont-resize">
-	<h2>Syntax for layers?</h2>
-
-	<table>
-		<style>
-			@scope {
-				td {
-					width: 41%;
-				}
-			}
-		</style>
-		<thead>
-			<tr>
-				<th>Direction</th>
-				<th>
-					<span class="badge">Option 1</span> New MethodDefinition keywords & descriptor keys
-				</th>
-				<th>
-					<span class="badge">Option 2</span>Built-in decorators
-				</th>
-			</tr>
-			<tr>
-				<th scope="row">Example</th>
-				<td>
-					<pre style="font-size: 80%"><code>
-						property n = 0;
-						validate n (v) { return v >= 0; }
-					</code></pre>
-				</td>
-				<td>
-					<pre style="font-size: 80%"><code>
-						@validate(v => v >= 0)
-						property n = 0;
-					</code></pre>
-				</td>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<th>Scope</th>
-				<td class="x">Much substantial change</td>
-				<td class="yes">Smaller delta</td>
-			</tr>
-			<tr>
-				<th>Readability</th>
-				<td class="yes">Important bits first</td>
-				<td class="soso">Auxiliary bits first. Mitigated through references for longer functions.</td>
-			</tr>
-			<tr>
-				<th>Lossiness</th>
-				<td class="yes md">Remain separate from `set` → lossless. <br>Can even be decorated separately!</td>
-				<td class="soso">Sugar that wraps <code>set</code> → lossy.
-					Can be designed to preserve the original setter somewhere.
-				</td>
-			</tr>
-			<tr>
-				<th>Imperative API</th>
-				<td class="yes md">`Object.defineProperty()`</td>
-				<td class="soso">None (by design).
-					Can be mitigated via object literal decorators.
-				</td>
-			</tr>
-			<!-- <tr>
-				<th>Object literal support?</th>
-				<td class="yes">Out of the box</td>
-				<td class="x md">[Speculative future extension](https://github.com/tc39/proposal-decorators/blob/master/EXTENSIONS.md)</td>
-			</tr> -->
-			<!-- <tr>
-				<th>Composability</th>
-				<td class="yes">Could compose with any member</td>
-				<td class="x">Can only be applied to accessors</td>
-			</tr> -->
-		</tbody>
-	</table>
-
-	<details class="notes md">
-		Technically another option would be to have the same `validate()` syntax that is just sugar, but then there is no benefit over a (built-in) decorator
-	</details>
-</article>
-
-<article class="slide">
-	<h2>Additional advantages of using built-in decorators</h2>
-
-	<ul>
-		<li>Low-fi, polyfillable way to test the waters. Syntax always a later possibility if there’s demand.</li>
-		<li>Can extend to non-property values (e.g. validate function arguments!)</li>
-		<li>Even more motivation for implementors to support decorators 😉</li>
-	</ul>
-</article>
-
-<article class="slide">
-	<h2>During the break…</h2>
-
-	<blockquote class="md">
-		I'm looking at my accessors usage, and they are (numbers are not measured):
-
-		- 75% "property forwarding"
-		- 15% lazy initial computation
-		- 10% validation
-		- 5% other
-
-		— Nicolò Ribaudo
-	</blockquote>
-</article>
-
-<article class="slide">
-	<h2>Changes before moving to <code>tc39/</code></h2>
-
-	<ol>
-		<li><strong>Remove value-backed accessors</strong> and work with Ron Buckton to explore potential improvements to auto-accessors instead.</li>
-		<li>Focus this proposal on <strong>composable accessors</strong> and split into two proposals:
-			<ol>
-				<li>Composable accessors via built-in decorators</li>
-				<li>Alias accessors</li>
-			</ol>
-		</li>
-	</ol>
-</article>
-
-<article class="slide">
-	<h2>Composable accessors via built-in decorators</h2>
-
-	<div class="sbs">
-		<div>
-			<p><strong>Problem statement:</strong>
-				There are large classes of accessor use cases with strong commonalities and they deserve better DX and tooling support.
-			</p>
-			<p style="margin-top: 1em">
-				This proposal aims to explore which of these may have good Impact/Effort to expose as <strong>built-in decorators</strong>.
-			</p>
-		</div>
-
-		<pre style="font-size: 70%"><code>
-			import isFoo, hasBar from "./validators.js";
-			const { validate, lazy } = SomeObject;
-
-			class C {
-				// Signature tentative, do not 🚲shed!
-				@validate(isFoo, hasBar) accessor foo;
-
-				@lazy accessor foo {
-					get () {
-						return expensiveComputation();
-					}
-				}
-			}
-		</code></pre>
-	</div>
-</article>
-
-<article class="slide">
-	<h2>Alias accessors</h2>
-
-	<p><strong>Problem statement:</strong>
-		Alias accessors are a particularly large class of accessor use cases and may be worth exploring separately,
-		as they are more likely to need syntax for reasonable DX and to access privates.
-	</p>
-
-	<div class="sbs">
-		<ul>
-			<li>Could eventually be merged into the auto-accessors / grouped accessors proposal (see <a href="https://github.com/tc39/proposal-grouped-and-auto-accessors/issues/14">#14</a>)</li>
-			<li>Ron had some implementation / speccing concerns but they were non-blocking for Stage 1</li>
-		</ul>
-		<pre><code>
-			class C {
-				// Indicative syntax, do not bikeshed
-				alias foo = #foo.value;
-
-				alias bar = #internals.bar {
-					get;
-					#set;
-				}
-			}
-		</code></pre>
-	</div>
-</article>
-
+	</article>
+</section>
 
 <footer class="slide">
 	<h2>Thank you!</h2>

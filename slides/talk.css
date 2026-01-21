@@ -264,7 +264,7 @@ fake-slide {
 	}
 }
 
-blockquote {
+blockquote:not(.speech-bubble) {
 	--background: oklch(from var(--color-purple) l c h / .1);
 	background: var(--background);
 	box-shadow: 0 0 0 1em var(--background);
