@@ -148,17 +148,14 @@
 		<h2>Example: Data validation</h2>
 		<p>Use case: <q class="md">Throw if `n` is not a positive number</q></p>
 
-		<div class="sbs center">
+		<div class="sbs center delayed-children">
 			<pre><code>
 			class C {
 				<mark class="signal">n = 0;</mark>
 			}
 			</code></pre>
 
-			<div>
-
-				<div class="arrow-right"></div>
-			</div>
+			<div class="arrow-right"></div>
 
 			<pre><code>
 			class C {
@@ -503,7 +500,7 @@
 				<pre><code>
 					class C {
 						_foo = 1;
-						<span class="fbf slow end token keyword tobikeshed-children"><span>alias</span><span>forward</span><span>proxy</span><span>delegate</span></span> foo = _foo;
+						<span class="fbf slow end token keyword tobikeshed-children"><span>alias</span><span>forward</span><span>alias</span><span>proxy</span><span>delegate</span></span> foo = _foo;
 					}
 				</code></pre>
 			</div>
@@ -596,33 +593,37 @@
 				<tr>
 					<th>Scope</th>
 					<td class="x">More substantial change</td>
-					<td class="yes">Smaller delta</td>
+					<td class="yes">Smaller delta, low-fi way to prototype</td>
 				</tr>
 				<tr>
 					<th>Readability</th>
 					<td class="yes">Important bits first</td>
-					<td class="x">Auxiliary bits first</td>
+					<td class="soso">Auxiliary bits first. Mitigated through references rather than inline functions.</td>
 				</tr>
 				<tr>
 					<th>Lossiness</th>
 					<td class="yes md">Remain separate from `set` → lossless. <br>Can even be decorated separately!</td>
-					<td class="x md">Sugar that wraps `set` → lossy</td>
+					<td class="soso">Sugar that wraps <code>set</code> → lossy.
+						Can be designed to preserve the original setter somewhere.
+					</td>
 				</tr>
 				<tr>
 					<th>Imperative API</th>
 					<td class="yes md">`Object.defineProperty()`</td>
-					<td class="x">None (by design)</td>
+					<td class="soso">None (by design).
+						Can be mitigated via object decorators.
+					</td>
 				</tr>
-				<tr>
+				<!-- <tr>
 					<th>Object literal support?</th>
 					<td class="yes">Out of the box</td>
 					<td class="x md">[Speculative future extension](https://github.com/tc39/proposal-decorators/blob/master/EXTENSIONS.md)</td>
-				</tr>
-				<tr>
-					<th>Composeability</th>
+				</tr> -->
+				<!-- <tr>
+					<th>Composability</th>
 					<td class="yes">Could compose with any member</td>
 					<td class="x">Can only be applied to accessors</td>
-				</tr>
+				</tr> -->
 			</tbody>
 		</table>
 
@@ -630,7 +631,7 @@
 			Technically another option would be to have the same `validate()` syntax that is just sugar, but then there is no benefit over a (built-in) decorator
 		</details>
 	</article>
-
+<!--
 	<article class="slide dont-resize">
 		<h2>Auto-upgrade regular data properties?</h2>
 
@@ -672,7 +673,7 @@
 			</code></pre>
 		</div>
 
-	</article>
+	</article> -->
 
 <!--
 <article class="slide dont-resize">
@@ -689,7 +690,7 @@
 	</code></pre>
 </article>
 -->
-
+<!--
 <article class="slide dont-resize">
 	<h2>Auto-upgrade regular data properties?</h2>
 
@@ -728,11 +729,11 @@
 			};
 		</code></pre>
 	</div>
-</article>
+</article> -->
 
 
 </section>
-
+<!--
 <article class="slide">
 	<h2>With grouped accessors</h2>
 	<div class="sbs center">
@@ -763,7 +764,7 @@
 			}
 		</code></pre>
 	</div>
-</article>
+</article> -->
 <!--
 <article class="slide dont-resize">
 	<h2>Example: silent read-only</h2>
@@ -792,13 +793,110 @@
 -->
 
 <article class="slide dont-resize" id="stage-1">
-	<p style="margin-bottom: .5em;">Recap of problem statement:</p>
+	<h2>Original problem statements</h2>
 
 	<div class="sbs">
 		<fake-slide for="problem-statements"></fake-slide>
 		<fake-slide for="why-together"></fake-slide>
 	</div>
-	<h2 style="margin-top: .5em;" class="delayed">Can I haz Stage 1?</h2>
+</article>
+
+<article class="slide">
+	<h2>Recap of previous discussion</h2>
+
+	<ul>
+		<li>Strong consensus <strong>against</strong> solving composable accessors via <strong>syntax</strong></li>
+		<li>Strong consensus that <strong>auto-accessors</strong> are largely sufficient for <strong>public class data properties</strong></li>
+		<li>Consensus that solving <strong>composable accessors via built-in decorators</strong> is worth exploring</li>
+		<li>Tooling support brought up as an additional benefit of standardized functionality for this.</li>
+		<li>Mild interest in <strong>exploring alias accessors</strong> for delegation/forwarding use cases</li>
+	</ul>
+</article>
+
+<article class="slide">
+	<h2>During the break…</h2>
+
+	<blockquote class="md">
+		I'm looking at my accessors usage, and they are (numbers are not measured):
+
+		- 75% "property forwarding"
+		- 15% lazy initial computation
+		- 10% validation
+		- 5% other
+
+		— Nicolò Ribaudo
+	</blockquote>
+</article>
+
+<article class="slide">
+	<h2>Changes before moving to <code>tc39/</code></h2>
+
+	<ol>
+		<li><strong>Remove value-backed accessors</strong> and work with Ron Buckton to explore potential improvements to auto-accessors instead.</li>
+		<li>Focus this proposal on <strong>composable accessors</strong> and split into two proposals:
+			<ol>
+				<li>Composable accessors via built-in decorators</li>
+				<li>Alias accessors</li>
+			</ol>
+		</li>
+	</ol>
+</article>
+
+<article class="slide">
+	<h2>Composable accessors via built-in decorators</h2>
+
+	<div class="sbs">
+		<div>
+			<p><strong>Problem statement:</strong>
+				There are large classes of accessor use cases with strong commonalities and they deserve better DX and tooling support.</p>
+			<p>
+				This proposal aims to explore which of these would have good Impact/Effort to expose as <strong>built-in decorators</strong>.
+			</p>
+		</div>
+
+		<pre><code>
+			let { validate, lazy } = SomeTBDNamespace;
+			import isFoo, implementsBar from "./validators.js";
+
+			class C {
+				// Indicative signature, do not bikeshed!
+				@validate(isFoo, implementsBar) accessor foo;
+
+				@lazy accessor foo {
+					get () {
+						return expensiveComputation();
+					}
+				}
+			}
+		</code></pre>
+	</div>
+</article>
+
+<article class="slide">
+	<h2>Alias accessors</h2>
+
+	<p><strong>Problem statement:</strong>
+		Alias accessors are a particularly large class of accessor use cases and may be worth exploring separately,
+		as they are more likely to need syntax for reasonable DX and to access privates.
+	</p>
+
+	<div class="sbs">
+		<ul>
+			<li>Could eventually be merged into the auto-accessors / grouped accessors proposal (see <a href="https://github.com/tc39/proposal-grouped-and-auto-accessors/issues/14">#14</a>)</li>
+			<li>Ron had some implementation / speccing concerns but these seemed non-blocking for Stage 1</li>
+		</ul>
+		<pre><code>
+			class C {
+				// Indicative syntax, do not bikeshed
+				alias foo = #foo.value;
+
+				alias bar = #internals.bar {
+					get;
+					#set;
+				}
+			}
+		</code></pre>
+	</div>
 </article>
 
 

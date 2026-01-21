@@ -248,3 +248,24 @@ fake-slide {
 	box-shadow: 0 0 1em rgba(0, 0, 0, .1);
 	background: white;
 }
+
+
+.soso {
+	--marker: "🟠 ";
+}
+
+.soso {
+	&:is(ul, li) {
+		list-style: var(--marker);
+	}
+
+	&:not(ul, li)::before {
+		content: var(--marker);
+	}
+}
+
+blockquote {
+	--background: oklch(from var(--color-purple) l c h / .1);
+	background: var(--background);
+	box-shadow: 0 0 0 1em var(--background);
+}
