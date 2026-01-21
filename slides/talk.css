@@ -1,0 +1,227 @@
+@import url("https://webplatform.design/talks/common/theme.css") layer(theme);
+@import url("https://webplatform.design/talks/common/css/utils.css") layer(utils);
+@import url("utils.css") layer(utils);
+
+@layer theme {
+	#cover {
+		h1 {
+			font-size: calc(4 * var(--slide-base-font-size, 1rem));
+		}
+	}
+
+	.slide > :nth-child(1 of header, h1, h2, h3) {
+		margin-block-end: 2rem;
+	}
+
+	.slide h3 {
+		font-size: 120%;
+		margin-block-end: 1rem;
+	}
+}
+
+.sbs + .sbs {
+	margin-block-start: 2rem;
+}
+
+.slide > h3 ~ section > h4 {
+	font-size: calc(2 * var(--slide-base-font-size, 1rem));
+	margin-block-start: 0;
+}
+
+object {
+	max-width: 100%;
+}
+
+q {
+	font-style: italic;
+}
+
+figure {
+	border: .05em solid var(--color-neutral-80);
+	padding: 1em;
+
+	figcaption {
+		display: block;
+		font-size: 80%;
+		color: var(--color-neutral-40);
+	}
+}
+
+.base,
+.layer {
+	--border-width: .05em;
+	--border-color: var(--color-neutral-70);
+	--knob-offset: .35em;
+	--background: var(--color-neutral-95);
+
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	max-width: max-content;
+
+	background-color: var(--background);
+	border: var(--border-width) solid var(--border-color);
+	padding: .3em .8em;
+	border-radius: .2em;
+	text-align: start;
+
+	> h2 {
+		font: inherit;
+		font-size: 150%;
+		text-align: inherit;
+	}
+
+	small,
+	.subtitle {
+		all: unset;
+		margin: 0;
+		font-size: 70%;
+		font-weight: 500;
+		margin-block-end: .3em;
+		color: inherit;
+
+	}
+
+
+
+	&::before,
+	&::after {
+		position: absolute;
+		right: 1.5em;
+		width: .7em;
+		height: .7em;
+		border: inherit;
+		border-radius: 50%;
+		background: var(--background, inherit);
+	}
+
+	/* Socket */
+	&::after {
+		--background: white;
+		content: "";
+		top: calc(-1 * var(--knob-offset));
+		clip-path: polygon(
+			-15em calc(var(--knob-offset) - var(--border-width)),
+			calc(100% + 15em) calc(var(--knob-offset) - var(--border-width)),
+			200% 200%, 0 200%);
+	}
+}
+
+.layer {
+	/* Knob */
+	&::before {
+		content: "";
+		top: calc(100% - var(--knob-offset));
+		clip-path: polygon(-15em calc(var(--knob-offset) - 1px), calc(100% + 15em) calc(var(--knob-offset) - 1px), 200% 200%, 0 200%);
+	}
+}
+
+.external {
+	&::before,
+	&::after {
+		box-shadow: -6em 0 0 var(--background), -6em 0 0 var(--border-width) var(--border-color);
+	}
+}
+
+#composable-accessor-components {
+	align-items: stretch;
+
+	h2 {
+		margin-block-end: .1em;
+	}
+
+	section {
+		display: flex;
+		align-items: start;
+		gap: 1em;
+
+		.delayed-children > .layer:not(.current, .displayed) {
+			transform: translateY(-100vh);
+		}
+
+		> header {
+			text-align: end;
+			margin-block-start: .4em;
+			margin-inline-end: .5em;
+			min-width: 6em;
+
+			h3 {
+				margin: 0;
+				text-align: inherit;
+				white-space: nowrap;
+			}
+
+			p {
+				font-size: 70%;
+			}
+		}
+
+		> div {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1em 1em;
+		}
+	}
+
+	.bases {
+		margin-block-start: 2em;
+	}
+}
+
+table thead th {
+	background: none;
+	color: inherit;
+	font-size: 100%;
+}
+
+table tbody td {
+	padding: .2em .4em;
+}
+
+thead th {
+	vertical-align: middle;
+	&:first-child {
+		padding-inline-start: 0;
+	}
+}
+
+#bikeshed {
+	background: var(--color-purple);
+	color: white;
+	font-weight: 500;
+
+	svg {
+		width: 100%;
+		height: 42vh;
+		margin-block: .5em;
+
+		.not-allowed {
+			fill: none;
+			stroke: var(--color-orange);
+			stroke-width: 10;
+
+			stroke-linecap: round;
+			stroke-linejoin: round;
+			stroke-dasharray: 0 300;
+
+			circle, line {
+				transition: stroke-dasharray 1s ease-in-out;
+
+				&:is(:target *) {
+					stroke-dasharray: 280 300;
+				}
+			}
+
+			circle {
+				transform-box: stroke-box;
+				transform-origin: center;
+				transform: rotate(-45deg);
+			}
+
+			line {
+				stroke: var(--color-orange);
+				transition-delay: 1s;
+			}
+		}
+	}
+}

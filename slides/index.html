@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Control Over Image Animation</title>
+	<link rel="shortcut icon" href="https://webplatform.design/assets/logo.svg">
+	<script src="talk.js" type="module"></script>
+	<link rel="stylesheet" href="talk.css">
+</head>
+<body data-markdown-elements=".md, details.notes, .md-children > :not(.no-md)" class="language-javascript">
+
+<header class="slide" id="cover">
+	<h1>
+		Composable, value-backed accessors
+	</h1>
+	<h2>A proposal for Stage 1 (Jan 2026 plenary)</h2>
+
+	<footer>
+		Lea Verou (OpenJS, Web Platform Collective)
+	</footer>
+</header>
+
+<section>
+	<header class="slide">
+		<h2>Problem space</h2>
+	</header>
+
+	<article class="slide md">
+		<header>
+			<h2>Class fields introspection recap</h2>
+			<a class="subtitle" href="https://github.com/leaverou/proposal-class-fields-introspection">leaverou/proposal-class-fields-introspection</a>
+		</header>
+
+		- Proposed in Nov 2025 plenary
+		- No consensus to expose existing public class fields
+		- General consensus in the room that a way is needed for classes to be able to declare public data properties **explicitly**
+	</article>
+
+	<article class="slide columns">
+		<h2>First-class protocols need this too</h2>
+
+		<section class="md">
+			### Class fields cannot satisfy protocol requirements
+
+			That would expose class fields to the outside world ([#58](https://github.com/tc39/proposal-first-class-protocols/issues/58))
+		</section>
+		<section class="md">
+			### Protocols cannot provide class fields
+
+			If they could, what is `this` in initializers?
+			- If the implementing class, that allows constructor hooks (consensus we don't want that in [#62](https://github.com/tc39/proposal-first-class-protocols/issues/62))
+			- And anything else is a serious inconsistency
+		</section>
+	</article>
+
+	<article class="slide">
+		<h2>Accessors to the rescue!</h2>
+
+		<div class="sbs">
+			<ul style="max-width: 25ch;">
+				<li>Already part of the class shape</li>
+				<li>Already introspectable</li>
+				<li>Often the future of these anyway</li>
+			</ul>
+			<div>
+				<p>We just need to make this:</p>
+				<pre><code>
+					class C {
+						#foo = 1;
+						get foo () {
+							return this.#foo;
+						}
+						set foo (v) {
+							this.#foo = v;
+						}
+					}
+				</code></pre>
+			</div>
+			<div>
+				<p>Have the DX of this:</p>
+				<pre><code>
+					class C {
+						foo = 1;
+					}
+				</code></pre>
+			</div>
+		</div>
+	</article>
+
+	<article class="slide">
+		<blockquote class="speech-bubble md">
+			<q>Ahem, have you heard about the [grouped and auto-accessors proposal](https://github.com/tc39/proposal-grouped-and-auto-accessors)?</q>
+		</blockquote>
+		<p class="delayed">Yes, and I’ll get to it soon, please bear with me!</p>
+	</article>
+
+	<article class="slide">
+		<h2>Can we fix accessors while we’re at it?</h2>
+	</article>
+
+	<article class="slide md">
+		<h2>Making complex things possible <em>composably</em></h2>
+
+		- We all know that good APIs make **simple things easy, and complex things possible**.
+		- Bust **most complex things are _additive_**: the simple thing + a little added functionality
+		- _How_ we make complex things possible is also important
+
+	</article>
+
+	<article class="slide columns">
+		<h2>Making complex things possible</h2>
+
+		<section>
+			<h3>✅ Extensible simple things</h3>
+			<p>Functionality can be <strong>layered</strong> on top of the simple thing</p>
+			<p>TODO: add chart</p>
+		</section>
+		<section>
+			<h3>❌ Usability cliffs</h3>
+			<p>Doing a complex thing requires <strong>recreating</strong> the simple thing from scratch</p>
+			<object data="https://lea.verou.me/blog/2025/user-effort/images/curve-cliff.svg"></object>
+		</section>
+	</article>
+
+	<article class="slide">
+		<h2>Accessors use the second model</h2>
+
+		<ul>
+			<li>Most use cases are actually backed by a "real" data property</li>
+			<li>Yet accessors require all the "plumbing" to be rebuilt before any additional functionality can be layered on top</li>
+		</ul>
+	</article>
+
+	<article class="slide" data-steps="1" id="example-data-validation">
+		<h2>Example: Data validation</h2>
+		<p>Use case: <q class="md">Throw if `n` is not a positive number</q></p>
+
+		<div class="sbs center">
+			<pre><code>
+			class C {
+				<mark class="signal">n = 0;</mark>
+			}
+			</code></pre>
+
+			<div>
+
+				<div class="arrow-right"></div>
+			</div>
+
+			<pre><code>
+			class C {
+				<mark class="noise">#n</mark> <mark class="signal">= 0;</mark>
+				<mark class="noise">get</mark> <mark class="signal">n</mark> <mark class="noise">() {
+					return this.#n;
+				}
+				set n(v) {</mark>
+					<mark class="signal">if (!(v >= 0)) {
+						throw new TypeError("…");
+					}</mark>
+					<span class="noise">this.#n = v;
+				}</mark>
+			}
+			</code></pre>
+		</div>
+
+		<p class="sbs center" style="gap: .3em" data-step-from="1">
+			<span class="signal legend"></span> Signal
+			<span style="width: 2em;"></span>
+			<span class="noise legend"></span> Noise
+		</p>
+	</article>
+
+	<article class="slide">
+		<h2><div class="block badge">Problem statement 2</div>
+			Can we improve signal-to-noise ratio?</h2>
+	</article>
+
+	<article class="slide">
+		<blockquote class="speech-bubble md">
+			<q>Ahem, the [grouped and auto-accessors proposal](https://github.com/tc39/proposal-grouped-and-auto-accessors) already does this and is Stage 1 and part of decorators!</q>
+		</blockquote>
+		<p class="delayed">Yes, on that…</p>
+	</article>
+
+	<article class="slide" data-steps="1">
+		<header>
+			<h2>Grouped and Auto-accessors</h2>
+			<p class="subtitle">Simple case</p>
+		</header>
+
+		<div class="sbs center">
+			<pre><code>
+			class C {
+				<mark class="noise">#n</mark> <mark class="signal">= 0;</mark>
+				<mark class="noise">get</mark> <mark class="signal">n</mark> <mark class="noise">() {
+					return this.#n;
+				}
+				set n(v) {</mark>
+					<span class="noise">this.#n = v;
+				}</mark>
+			}
+			</code></pre>
+			<div class="arrow-right"></div>
+			<pre><code>
+				class C {
+					<mark class="signal">accessor n = 1;</mark>
+				}
+			</code></pre>
+		</div>
+
+		<p data-step-from="1">✅ Excellent <mark class="signal">signal</mark>-to-<mark class="noise">noise</mark> ratio!</p>
+	</article>
+
+	<article class="slide" data-steps="1">
+		<header>
+			<h2>Grouped and Auto-accessors</h2>
+			<p class="subtitle">Data validation</p>
+		</header>
+
+		<div class="sbs center">
+			<pre><code>
+			class C {
+				<mark class="noise">#n</mark> <mark class="signal">= 0;</mark>
+				<mark class="noise">get</mark> <mark class="signal">n</mark> <mark class="noise">() {
+					return this.#n;
+				}
+				set n(v) {</mark>
+					<mark class="signal">if (!(v >= 0)) {
+						throw new TypeError("…");
+					}</mark>
+					<span class="noise">this.#n = v;
+				}</mark>
+			}
+			</code></pre>
+			<div class="arrow-right"></div>
+			<pre><code>
+			class C {
+				<mark class="noise">#n</mark> <mark class="signal">= 0;</mark>
+				<mark class="signal">accessor n </mark><mark class="noise">{
+					get () {
+						return this.#n;
+					}
+					set (v) {</mark>
+						<mark class="signal">if (!(v >= 0)) {
+							throw new TypeError("…");
+						}</mark>
+						<span class="noise">this.#n = v;
+					}
+				}</mark>
+			}
+			</code></pre>
+		</div>
+	</article>
+
+	<article class="slide dont-resize">
+		<h2>Is “accessor” the right framing for the simple case?</h2>
+
+		<div class="sbs center">
+			<strong style="white-space: nowrap;">Current mental model:</strong>
+			<img src="images/accessor-flowchart.svg" alt="Accessor flowchart" style="flex: 1; min-width: 0">
+		</div>
+
+		<div class="sbs center delayed">
+			<pre><code>
+				class C {
+					accessor foo = 1;
+				}
+			</code></pre>
+			<img src="images/trollface.png" alt="Trollface">
+		</div>
+	</article>
+
+	<article class="slide">
+		<h2>Is “accessor” the right framing?</h2>
+
+		<div class="sbs">
+			<div>
+				<p>For the simple case, accessors are an <strong>implementation detail</strong>.</p>
+				<ul>
+					<li> User intent is not "I want an accessor" unless there is logic.</li>
+				</ul>
+			</div>
+			<figure>
+				<a href="https://x.com/LeaVerou/status/2013499720048554192"><img src="images/poll.png" alt="" style="max-width: 35ch"></a>
+				<figcaption><q>Accessor</q> is still a somewhat obscure term for many JS authors</figcaption>
+			</figure>
+
+		</div>
+
+		<details class="notes">
+			- Just like functions are an implementation detail for classes and we didn't design class syntax around them
+			- TAG anecdote
+		</details>
+	</article>
+
+	<article class="slide">
+		<h2>Problem statements</h2>
+
+		<ol>
+			<li>We need a high signal-to-noise ratio way to define data properties that become part of the class shape</li>
+			<li><em>Additive</em> accessor use cases are common enough to deserve better signal-to-noise ratio</li>
+		</ol>
+	</article>
+
+	<article class="slide">
+		<h2>Why solve them together?</h2>
+
+		<ul>
+			<li>Class public data properties often evolve into additive accessors</li>
+			<li>Solving them together productively constrains the solution space and avoids language clutter</li>
+		</ul>
+	</article>
+</section>
+
+<section>
+	<header class="slide">
+		<h2>Syntax exploration</h2>
+	</header>
+
+	<article class="slide" id="bikeshed">
+		<h2>Please hold off on syntax bikeshedding!</h2>
+		<svg viewBox="0 0 100 100">
+			<use href="images/bikeshed.svg#root" x="23" y="17" width="60" height="60" />
+			<g class="not-allowed">
+				<circle cx="50" cy="50" r="45" />
+				<line x1="82" y1="18" x2="18" y2="82"  />
+			</g>
+		</svg>
+		<p>
+			Any and all syntax shown is meant to be illustrative
+		</p>
+	</article>
+
+	<article class="slide" id="composable-accessor-components">
+		<header>
+			<h2>Composable accessor components<span class="delayed" data-index="6">*</span></h2>
+			<p class="subtitle delayed" data-index="6">*not all necessarily in scope</p>
+		</header>
+
+		<section class="layers delayed">
+			<header>
+				<h3>Layers</h3>
+				<p>0 or more</p>
+			</header>
+
+			<div class="delayed-children">
+				<article class="layer">
+					Data validation
+					<small>Should the write proceed?</small>
+				</article>
+				<article class="layer">
+					Data normalization
+					<small>What should be stored?</small>
+				</article>
+				<article class="layer">
+					Side effects
+					<small>Before or after writes</small>
+				</article>
+				<article class="layer external" data-index="5">
+					Data transformation
+					<small>What should be read?</small>
+				</article>
+				<article class="layer external" data-index="5">
+					Access control
+					<small>Allow reads but not writes</small>
+				</article>
+			</div>
+		</section>
+
+		<section class="bases">
+			<header>
+				<h3>Base</h3>
+				<p>Exactly one</p>
+			</header>
+
+			<div>
+				<article class="base">Internal property
+					<small>Never accessed outside the accessor</small>
+				</article>
+				<article class="base external delayed" data-index="3">Existing property
+					<small>Also accessed independently</small>
+				</article>
+			</div>
+		</section>
+	</article>
+
+	<article class="slide">
+		<header>
+			<h2>Composable accessor components</h2>
+			<p class="subtitle">Useful independently, more powerful together</p>
+		</header>
+
+		<ul>
+			<li>Can ship independently</li>
+			<li>Base: desugars to a regular accessor</li>
+			<li>Layers: new descriptors? built-in decorators?</li>
+		</ul>
+	</article>
+
+	<article class="slide" data-type="Base">
+		<header class="base">
+			<h2>Internal property</h2>
+			<p class="subtitle">Never accessed outside the accessor</p>
+		</header>
+
+		<div class="sbs center">
+			<div class="fbf">
+				<pre><code>
+					class C {
+						#foo = 1;
+						get foo () { return this.#foo; }
+						set foo (v) { this.#foo = v; }
+					}
+				</code></pre>
+				<pre><code>
+					class C {
+						_foo = 1;
+						get foo () { return this._foo; }
+						set foo (v) { this._foo = v; }
+					}
+				</code></pre>
+				<pre><code>
+					class C {
+						[foo] = 1; // symbol
+						get foo () { return this[foo]; }
+						set foo (v) { this[foo] = v; }
+					}
+				</code></pre>
+			</div>
+			<div class="arrow-right"></div>
+			<pre><code>
+				class C {
+					<span class="fbf slow end token keyword tobikeshed-children"><span>property</span><span>data</span></span> foo = 1;
+				}
+			</code></pre>
+		</div>
+		<ul>
+			<li>This is the one we need for public class properties</li>
+			<li>Eliminate cognitive overhead of naming another property</li>
+		</ul>
+	</article>
+
+	<article class="slide dont-resize" data-type="Base">
+		<header class="base external">
+			<h2>Existing property</h2>
+			<small>Also accessed independently</small>
+		</header>
+
+		<div class="fbf slow">
+			<div class="sbs center">
+				<pre><code>
+					class C {
+						_foo = 1;
+						get foo () {
+							return this._foo;
+						}
+						set foo (v) {
+							this._foo = v;
+						}
+					}
+				</code></pre>
+				<div class="arrow-right"></div>
+				<pre><code>
+					class C {
+						_foo = 1;
+						<span class="fbf slow end token keyword tobikeshed-children"><span>alias</span><span>forward</span><span>proxy</span><span>delegate</span></span> foo = _foo;
+					}
+				</code></pre>
+			</div>
+			<div class="sbs center">
+				<pre><code>
+					class C {
+						#i = this.attachInternals();
+						get foo () {
+							return this.#i.foo;
+						}
+						set foo (v) {
+							this.#i.foo = v;
+						}
+					}
+				</code></pre>
+				<div class="arrow-right"></div>
+				<pre><code>
+					class C {
+						#i = this.attachInternals();
+						<span class="fbf slow end token keyword tobikeshed-children"><span>alias</span><span>forward</span><span>proxy</span><span>delegate</span></span> foo = #i.foo;
+					}
+				</code></pre>
+			</div>
+			<div class="sbs center">
+				<pre><code>
+					class C implements P{
+						get foo () {
+							return this[P.foo];
+						}
+						set foo (v) {
+							this[P.foo] = v;
+						}
+					}
+				</code></pre>
+				<div class="arrow-right"></div>
+				<pre><code>
+					class C implements P {
+						<span class="fbf slow end token keyword tobikeshed-children"><span>alias</span><span>forward</span><span>proxy</span><span>delegate</span></span> foo = P.foo;
+					}
+				</code></pre>
+			</div>
+		</div>
+
+		</div>
+
+		<ul>
+			<li>Customize backing property</li>
+			<li>Facilitate object delegation (e.g. <code>ElementInternals</code>, first-class protocols)</li>
+		</ul>
+	</article>
+
+	<article class="slide xdont-resize">
+		<h2>Syntax for layers?</h2>
+
+		<table>
+			<style>
+				@scope {
+					td {
+						width: 41%;
+					}
+				}
+			</style>
+			<thead>
+				<tr>
+					<th></th>
+					<th>
+						<span class="badge">Option 1</span> New MethodDefinition keywords & descriptor keys
+					</th>
+					<th>
+						<span class="badge">Option 2</span>Built-in decorators
+					</th>
+				</tr>
+				<tr>
+					<th scope="row">Example</th>
+					<td>
+						<pre style="font-size: 80%"><code>
+							property n = 0;
+							validate n (v) { return v >= 0; }
+						</code></pre>
+					</td>
+					<td>
+						<pre style="font-size: 80%"><code>
+							@validate(v => v >= 0)
+							property n = 0;
+						</code></pre>
+					</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th>Scope</th>
+					<td class="x">More substantial change</td>
+					<td class="yes">Smaller delta</td>
+				</tr>
+				<tr>
+					<th>Readability</th>
+					<td class="yes">Important bits first</td>
+					<td class="x">Auxiliary bits first</td>
+				</tr>
+				<tr>
+					<th>Lossiness</th>
+					<td class="yes md">Remain separate from `set` → lossless. <br>Can even be decorated separately!</td>
+					<td class="x md">Sugar that wraps `set` → lossy</td>
+				</tr>
+				<tr>
+					<th>Imperative API</th>
+					<td class="yes md">`Object.defineProperty()`</td>
+					<td class="x">None (by design)</td>
+				</tr>
+				<tr>
+					<th>Object literal support?</th>
+					<td class="yes">Out of the box</td>
+					<td class="x md">[Speculative future extension](https://github.com/tc39/proposal-decorators/blob/master/EXTENSIONS.md)</td>
+				</tr>
+				<tr>
+					<th>Composeability</th>
+					<td class="yes">Could compose with any member</td>
+					<td class="x">Can only be applied to accessors</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<details class="notes md">
+			Technically another option would be to have the same `validate()` syntax that is just sugar, but then there is no benefit over a (built-in) decorator
+		</details>
+	</article>
+
+	<article class="slide dont-resize">
+		<h2>Auto-upgrade regular data properties?</h2>
+
+		<div class="sbs center" style="gap: .4em">
+			<pre><code>
+				let obj = {
+					_n: 0,
+					get n () {
+						return this._n;
+					},
+					set n (v) {
+						if (v >= 0) {
+							this._n = v;
+						}
+					}
+				};
+			</code></pre>
+
+			<div class="arrow-right"></div>
+
+			<pre><code>
+				let obj = {
+					property n: 0,
+					validate n (v) {
+						return v >= 0;
+					}
+				};
+			</code></pre>
+
+			<div class="arrow-right"></div>
+
+			<pre><code>
+				let obj = {
+					n: 0,
+					validate n (v) {
+						return v >= 0;
+					}
+				};
+			</code></pre>
+		</div>
+
+	</article>
+
+<article class="slide dont-resize">
+	<h2>Auto-upgrade regular data properties?</h2>
+
+	<div class="sbs center" style="gap: .4em">
+		<pre><code>
+			let obj = {
+				get n () {
+					return this._n;
+				},
+				set n (v) {
+					if (v >= 0) {
+						this._n = v;
+					}
+				}
+			};
+		</code></pre>
+
+		<div class="arrow-right"></div>
+
+		<pre><code>
+			let obj = {
+				property n,
+				validate n (v) {
+					return v >= 0;
+				}
+			};
+		</code></pre>
+
+		<div class="arrow-right"></div>
+
+		<pre><code>
+			let obj = {
+				validate n (v) {
+					return v >= 0;
+				}
+			};
+		</code></pre>
+	</div>
+
+</article>
+</section>
+
+<article class="slide">
+	<h2>With grouped accessors</h2>
+	<div class="sbs center">
+		<div>
+			<pre><code>
+				class C {
+					property n = 0;
+					validate n (v) {
+						return v >= 0;
+					}
+				}
+			</code></pre>
+		</div>
+		<div class="arrow-right"></div>
+		<pre><code>
+			class C {
+				property n {
+					validate (v) {
+						return v >= 0;
+					}
+				} = 0;
+			}
+		</code></pre>
+	</div>
+</article>
+
+<article class="slide">
+	<h2>Can I haz Stage 1?</h2>
+</article>
+
+<footer class="slide">
+	<h2>Thank you!</h2>
+
+	<ul>
+		<li>Repo: <a href="https://github.com/leaverou/proposal-composable-accessors">leaverou/proposal-composable-accessors</a></li>
+		<li>Slides at <a href="https://projects.verou.me/proposal-composable-accessors/slides/">projects.verou.me/proposal-composable-accessors/slides/</a></li>
+	</ul>
+</footer>
+
+</body>
+</html>

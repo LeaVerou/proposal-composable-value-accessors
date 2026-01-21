@@ -81,7 +81,7 @@ class A {
 Some ideas for what the keyword could be:
 - `data`: Concise, but a bit confusing in object literals (isn't everything data?). The proposal will use this from here onwards.
 - `property`: Consistent with other parts of the language. Same issue with `data` (isn't everything a property?)
-- `field`: Too technical?
+- `field`: Too technical? Also, we want to explicitly differentiate between this and class fields.
 - `public`: Makes it clear that this is part of the public API, but we don't use `public` for methods, so it's inconsistent. And it doesn't communicate that this is a property, not a function.
 - `accessor`: In the no-logic case, the mental model should be declaring a data property, and accessors are an implementation detail that should not drive syntax. Additionally, they are not a word that most JS authors are familiar with.
 

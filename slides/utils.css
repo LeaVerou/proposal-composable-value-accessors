@@ -1,0 +1,268 @@
+
+
+.type {
+	position: absolute;
+	top: 0;
+	inset-inline-end: calc(2 * var(--slide-padding));
+	padding: .1em .5em .15em;
+	background: radial-gradient(circle at 10% 20% in oklch, var(--color-red), var(--color-purple));
+	color: canvasText;
+	color-scheme: dark;
+	font-weight: 700;
+	text-transform: uppercase;
+	font-stretch: condensed;
+	font-size: 2rem;
+}
+
+.badge.block {
+	font-size: clamp(0rem, 70%, 3rem);
+}
+
+.badge:not(.block) {
+	display: inline-block;
+	vertical-align: .1em;
+	margin-inline: .3em;
+	border-radius: .2em;
+	font-size: 60%;
+}
+
+pre .filename {
+	font-size: 70%;
+	font-weight: 700;
+	position: absolute;
+	bottom: 100%;
+	left: 1em;
+	padding: .1em .8em 0;
+	background: oklch(from var(--background-color) calc(l - .08) calc(c + clamp(0, .03, c)) h);
+	color: var(--color);
+	border-radius: .4rem;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	mix-blend-mode: multiply;
+}
+
+.emoji {
+	font-size: calc(4 * var(--slide-base-font-size, 1rem));
+}
+
+.arrow-right {
+	--_arrow-inset: var(--arrow-inset, .4em);
+	--_arrow-head-length: var(--arrow-head-length, .8em);
+	--_arrow-body-length: calc(100% - var(--_arrow-head-length));
+	--_color: var(--color, var(--color-neutral-90));
+	background: var(--_color);
+
+	&:where(:empty) {
+		--_color: var(--color, var(--color-neutral-80));
+		--_arrow-inset: var(--arrow-inset, .3em);
+	}
+
+	flex-grow: 1;
+	flex-shrink: 0;
+	min-inline-size: max(1em, 1.6 * var(--_arrow-head-length));
+	padding-block: calc(.1em + var(--_arrow-inset));
+	padding-inline-end: calc(var(--_arrow-head-length) * .7);
+	margin-inline-end: -.3em;
+	margin-block: auto;
+
+	clip-path: polygon(
+		0 var(--_arrow-inset),
+		var(--_arrow-body-length) var(--_arrow-inset),
+		var(--_arrow-body-length) 0, 100% 50%,
+		var(--_arrow-body-length) 100%,
+		var(--_arrow-body-length) calc(100% - var(--_arrow-inset)),
+		0 calc(100% - var(--_arrow-inset))
+	);
+}
+
+.fbf .arrow-right {
+	flex-grow: 0;
+}
+
+
+.dumpster-fire {
+	background-image: linear-gradient(to bottom, hsl(0 0 100 / .8), hsl(0 0 100 / .97) 50%), url(images/dumpster-fire.svg), url(images/dumpster-fire.svg);
+	background-size: auto, 4em 4em, 4em 4em;
+	background-position: 0 0, 0 0, 2em 2em;
+	background-repeat: repeat;
+}
+
+.speech-bubble {
+	position: relative;
+
+	--background-color:
+	color-mix(in oklch, var(--color, var(--color-neutral)) 5%, oklch(.985 .02 none));
+		--text-color:
+	color-mix(in oklch, var(--color, var(--color-neutral)) 30%, oklch(0 0 none));
+		background: var(--background-color);
+		color: var(--text-color);
+	--r: .4em;
+	--pointer-height: 1em;
+	--pointer-width: 1.2em;
+	--pointer-peak: -.1;
+	--pointer-x: 10%;
+	padding: 1em;
+	padding-bottom: calc(1em + var(--pointer-height));
+	/* border-radius: var(--r); */
+
+	clip-path: shape(
+		from var(--r) 0%,
+		hline to calc(100% - var(--r)),
+		arc to 100% var(--r) of var(--r) cw small,
+		vline to calc(100% - var(--pointer-height) - var(--r)),
+		arc to calc(100% - var(--r)) calc(100% - var(--pointer-height)) of var(--r) cw small,
+		hline to calc(var(--pointer-x) + var(--pointer-width)),
+		line to calc(var(--pointer-x) + var(--pointer-width) * var(--pointer-peak)) 100%,
+		line to var(--pointer-x) calc(100% - var(--pointer-height)),
+		hline to var(--r),
+		arc to 0% calc(100% - var(--pointer-height) - var(--r)) of var(--r) cw small,
+		vline to var(--r),
+		arc to var(--r) 0% of var(--r) cw small,
+		close
+	);
+
+	&::before {
+		content: none;
+	}
+}
+
+.signal, .noise {
+	border-radius: .1em;
+	--background-color: oklab(from var(--color) l a b / 20%);
+	background: var(--background-color);
+	box-shadow: 0 0 0 .1em var(--background-color);
+	transition: 200ms;
+	transition-property: background-color, box-shadow;
+
+	.slide[data-steps]:not([data-step]) :is(&) {
+		--background-color: transparent;
+	}
+}
+
+.legend {
+	display: inline-block;
+	width: 1.2em;
+	height: 1em;
+}
+
+.signal {
+	--color: var(--color-green);
+}
+
+.noise {
+	--color: var(--color-red);
+}
+
+@property --index {
+	syntax: "<integer>";
+	initial-value: 1;
+	inherits: true;
+}
+
+@keyframes fbf {
+	from {
+		--index: 1;
+	}
+	to {
+		--index: sibling-count();
+	}
+}
+
+@property --is-active {
+	syntax: "<integer>";
+	initial-value: 0;
+	inherits: true;
+}
+
+.fbf {
+	display: grid;
+	justify-items: center;
+	align-items: center;
+
+	&:where(span) {
+		display: inline-grid;
+	}
+
+	&.end {
+		justify-items: end;
+		align-items: end;
+	}
+
+	&.slow {
+		--fbf-duration: 2s;
+	}
+
+	&.fast {
+		--fbf-duration: .5s;
+	}
+
+	> :not(.fbf-ignore) {
+		--is-active: 0;
+		position: relative;
+		grid-column: 1;
+		grid-row: 1;
+		margin: 0;
+		z-index: var(--is-active);
+		opacity: var(--is-active);
+	}
+
+	&:not(.delayed-children) > :not(.fbf-ignore) {
+		--is-active: calc(1 - clamp(0, abs(sibling-index() - var(--index)), 1));
+		animation: fbf calc(sibling-count() * var(--fbf-duration, 1s)) linear infinite;
+	}
+
+	&.delayed-children > :not(.fbf-ignore).current,
+	&.delayed-children:not(:has(> .current)) > :first-child {
+		--is-active: 1;
+	}
+}
+
+/* Ribbon */
+.slide.slide[data-type],
+.slide.slide:has(> .ribbon) {
+	overflow: clip;
+}
+
+[data-type].slide::after,
+.slide .ribbon {
+	content: attr(data-type);
+	position: fixed;
+	top: 0;
+	right: 0;
+	z-index: 1;
+	padding: .4em 0;
+	text-align: center;
+	text-transform: uppercase;
+	font-weight: bold;
+	background: radial-gradient(circle, var(--color-purple), var(--color-red), var(--color-orange));
+	color: white;
+	font-size: 80%;
+	line-height: 1.1;
+	white-space: pre-line;
+	min-width: 20em;
+	box-shadow: 0 10px 1em -.6em black;
+	transform: rotate(45deg) translate(6em, var(--ribbon-offset, -2em));
+}
+
+.tobikeshed,
+.tobikeshed-children > * {
+	position: relative;
+
+	&::before {
+		content: "to";
+		position: absolute;
+		top: 50%;
+		right: 100%;
+		padding-block: .2em .3em;
+		padding-inline: .4em 1.4em;
+		margin-inline-end: .2em;
+		background: white url(images/bikeshed.svg) no-repeat 90% 40% / auto 1em;
+		color: black;
+		border: .1em solid var(--color-neutral-80);
+		border-radius: .3em;
+		border-top-right-radius: 0;
+		font: bold 1.2em/1 var(--font-sans);
+		text-align: start;
+	}
+}
+
