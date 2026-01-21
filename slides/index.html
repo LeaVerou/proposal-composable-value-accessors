@@ -942,7 +942,7 @@
 	</ol>
 </article>
 
-<article class="slide dont-resize">
+<article class="slide">
 	<h2>Composable accessors via built-in decorators</h2>
 
 	<div class="sbs">
@@ -950,17 +950,17 @@
 			<p><strong>Problem statement:</strong>
 				There are large classes of accessor use cases with strong commonalities and they deserve better DX and tooling support.
 			</p>
-			<p>
-				This proposal aims to explore which of these would have good Impact/Effort to expose as <strong>built-in decorators</strong>.
+			<p style="margin-top: 1em">
+				This proposal aims to explore which of these may have good Impact/Effort to expose as <strong>built-in decorators</strong>.
 			</p>
 		</div>
 
-		<pre><code>
+		<pre style="font-size: 70%"><code>
 			import isFoo, hasBar from "./validators.js";
 			const { validate, lazy } = SomeObject;
 
 			class C {
-				// Indicative signature, do not 🚲shed!
+				// Signature tentative, do not 🚲shed!
 				@validate(isFoo, hasBar) accessor foo;
 
 				@lazy accessor foo {
