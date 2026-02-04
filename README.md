@@ -10,12 +10,12 @@
 
 > [!IMPORTANT]
 > This proposal was presented in the Jan 2026 plenary ([slides](https://projects.verou.me/proposal-composable-value-accessors/slides/index.html)).
-> It is in the process of being split into two separate proposals, both of which have advanced to Stage 1:
+> It has been split into two separate proposals, both of which have advanced to Stage 1:
 > 1. [Composable accessors via built-in decorators](https://github.com/leaverou/proposal-composable-accessors)
 > 2. [Alias accessors](https://github.com/leaverou/proposal-alias-accessors)
-> 3. Value-backed accessors will be dropped in favor of [auto-accessors](https://github.com/tc39/proposal-grouped-and-auto-accessors).
+> Value-backed accessors are dropped in favor of [auto-accessors](https://github.com/tc39/proposal-grouped-and-auto-accessors).
 >
-> Once this is complete, this repository will be archived.
+> This repository is now archived and progress should continue in the repos linked above.
 
 ## Contents
 
